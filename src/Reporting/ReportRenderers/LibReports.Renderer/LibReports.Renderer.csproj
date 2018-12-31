@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Bau.Libraries.LibReports.Renderer</RootNamespace>
+    <AssemblyName>LibReports.Renderer</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Parser\Tools\DataProviderCommandParser.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\LibHelper.Standard\LibHelper.Standard.csproj" />
+    <ProjectReference Include="..\..\..\Common\LibMarkup.Standard\LibMarkup.Standard.csproj" />
+  </ItemGroup>
+
+</Project>

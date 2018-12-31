@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Bau.Librares.LibReports</RootNamespace>
+    <AssemblyName>LibReports</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\LibHelper.Standard\LibHelper.Standard.csproj" />
+    <ProjectReference Include="..\..\Common\LibMarkup.Standard\LibMarkup.Standard.csproj" />
+    <ProjectReference Include="..\..\Compilers\LibTokenizer\LibTokenizer\LibTokenizer.csproj" />
+    <ProjectReference Include="..\..\DataBase\Aggregator.Providers\Aggregator.Providers.Base\Aggregator.Providers.Base.csproj" />
+    <ProjectReference Include="..\ReportRenderers\LibReports.Renderer\LibReports.Renderer.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Bau.Libraries.LibDbProviders.Base</RootNamespace>
+  </PropertyGroup>
+
+</Project>

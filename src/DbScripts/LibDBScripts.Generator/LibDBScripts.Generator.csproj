@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Bau.Libraries.LibDBScripts.Generator</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfoll.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\LibHelper.Standard\LibHelper.Standard.csproj" />
+    <ProjectReference Include="..\..\..\Common\LibMarkup.Standard\LibMarkup.Standard.csproj" />
+    <ProjectReference Include="..\..\..\Compilers\LibCompiler\Compiler.LibInterpreter\Compiler.LibInterpreter.csproj" />
+    <ProjectReference Include="..\..\..\Compilers\LibCompiler\Compiler.LibTokenizer\Compiler.LibTokenizer.csproj" />
+    <ProjectReference Include="..\..\Aggregator.Providers\Aggregator.Providers.Base\Aggregator.Providers.Base.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+</Project>

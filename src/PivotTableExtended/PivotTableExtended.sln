@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PivotTableExtended", "PivotTableExtended\PivotTableExtended.csproj", "{FC4CD715-2A8E-4706-817E-D8F9C2A49DE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibDomain.Model.Base", "..\..\Common\Domain\LibDomain.Model.Base\LibDomain.Model.Base.csproj", "{1F6EE90D-6D1C-4457-8ED1-6AC3F55E39E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibHelper", "..\..\Common\LibHelper\LibHelper.csproj", "{D9E2DC6B-3E54-421F-9231-A4F3A799BC4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestPivotTableExtended", "TestPivotTableExtended\TestPivotTableExtended.csproj", "{382F0016-205E-40C8-8249-CBECAA4477BA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC4CD715-2A8E-4706-817E-D8F9C2A49DE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC4CD715-2A8E-4706-817E-D8F9C2A49DE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC4CD715-2A8E-4706-817E-D8F9C2A49DE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC4CD715-2A8E-4706-817E-D8F9C2A49DE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F6EE90D-6D1C-4457-8ED1-6AC3F55E39E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F6EE90D-6D1C-4457-8ED1-6AC3F55E39E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F6EE90D-6D1C-4457-8ED1-6AC3F55E39E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F6EE90D-6D1C-4457-8ED1-6AC3F55E39E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9E2DC6B-3E54-421F-9231-A4F3A799BC4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9E2DC6B-3E54-421F-9231-A4F3A799BC4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9E2DC6B-3E54-421F-9231-A4F3A799BC4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9E2DC6B-3E54-421F-9231-A4F3A799BC4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{382F0016-205E-40C8-8249-CBECAA4477BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{382F0016-205E-40C8-8249-CBECAA4477BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{382F0016-205E-40C8-8249-CBECAA4477BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{382F0016-205E-40C8-8249-CBECAA4477BA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Bau.Libraries.Aggregator.Providers.Base</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DataBaseProviders\LibDbProviders.Base\LibDbProviders.Base.csproj" />
+  </ItemGroup>
+
+</Project>

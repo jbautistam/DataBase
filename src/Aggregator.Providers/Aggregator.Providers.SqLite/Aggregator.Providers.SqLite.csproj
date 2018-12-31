@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Bau.Libraries.Aggregator.Providers.SqLite</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DataBaseProviders\LibDbProviders.Base\LibDbProviders.Base.csproj" />
+    <ProjectReference Include="..\..\DataBaseProviders\LibDbProviders.SqLite\LibDbProviders.SqLite.csproj" />
+    <ProjectReference Include="..\Aggregator.Providers.Base\Aggregator.Providers.Base.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Common\LibHelper.Standard\LibHelper.Standard.csproj" />
-    <ProjectReference Include="..\..\..\Common\LibMarkup.Standard\LibMarkup.Standard.csproj" />
+    <ProjectReference Include="..\..\..\..\..\Common\LibHelper\src\LibHelper.csproj" />
+    <ProjectReference Include="..\..\..\..\..\Common\LibMarkup\src\LibMarkup.csproj" />
   </ItemGroup>
 
 </Project>

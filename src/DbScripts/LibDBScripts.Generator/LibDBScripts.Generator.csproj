@@ -10,10 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Common\LibHelper.Standard\LibHelper.Standard.csproj" />
-    <ProjectReference Include="..\..\..\Common\LibMarkup.Standard\LibMarkup.Standard.csproj" />
-    <ProjectReference Include="..\..\..\Compilers\LibCompiler\Compiler.LibInterpreter\Compiler.LibInterpreter.csproj" />
-    <ProjectReference Include="..\..\..\Compilers\LibCompiler\Compiler.LibTokenizer\Compiler.LibTokenizer.csproj" />
+    <ProjectReference Include="..\..\..\..\Common\LibHelper\src\LibHelper.csproj" />
+    <ProjectReference Include="..\..\..\..\Common\LibMarkup\src\LibMarkup.csproj" />
+    <ProjectReference Include="..\..\..\..\Compilers\src\LibCompiler\Compiler.LibInterpreter\Compiler.LibInterpreter.csproj" />
     <ProjectReference Include="..\..\Aggregator.Providers\Aggregator.Providers.Base\Aggregator.Providers.Base.csproj" />
   </ItemGroup>
 

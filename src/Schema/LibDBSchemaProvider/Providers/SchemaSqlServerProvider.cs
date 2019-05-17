@@ -369,16 +369,16 @@ namespace Bau.Libraries.LibDBSchemaProvider.Providers
 		/// <summary>
 		///		Obtiene el tipo de una restricción a partir de su nombre
 		/// </summary>
-		private SchemaConstraint.Constratype GetConstratype(string type)
+		private SchemaConstraint.ConstraintType GetConstratype(string type)
 		{
 			if (type.Equals("UNIQUE", StringComparison.CurrentCultureIgnoreCase))
-				return SchemaConstraint.Constratype.Unique;
+				return SchemaConstraint.ConstraintType.Unique;
 			else if (type.Equals("PRIMARY KEY", StringComparison.CurrentCultureIgnoreCase))
-				return SchemaConstraint.Constratype.PrimaryKey;
+				return SchemaConstraint.ConstraintType.PrimaryKey;
 			else if (type.Equals("FOREIGN KEY", StringComparison.CurrentCultureIgnoreCase))
-				return SchemaConstraint.Constratype.ForeignKey;
+				return SchemaConstraint.ConstraintType.ForeignKey;
 			else
-				return SchemaConstraint.Constratype.Unknown;
+				return SchemaConstraint.ConstraintType.Unknown;
 		}
 
 		/// <summary>

@@ -5,7 +5,7 @@ namespace Bau.Libraries.LibDbProviders.Base.Schema
 	/// <summary>
 	///		Datos de un campo de base de datos
 	/// </summary>
-	public class FieldDbModel
+	public class FieldDbModel : BaseSchemaDbModel
 	{
 		// Enumerados públicos
 		/// <summary>
@@ -28,9 +28,9 @@ namespace Bau.Libraries.LibDbProviders.Base.Schema
 		}
 
 		/// <summary>
-		///		Nombre del campo
+		///		Nombre de la tabla a la que se asocia el campo (interesante sobre todo cuando se trata de una vista)
 		/// </summary>
-		public string Name { get; set; }
+		public string Table { get; set; }
 
 		/// <summary>
 		///		Tipo del campo
@@ -61,5 +61,27 @@ namespace Bau.Libraries.LibDbProviders.Base.Schema
 		///		Formato del campo
 		/// </summary>
 		public string Format { get; set; }
+
+		public int OrdinalPosition { get; set; }
+
+		public string Default { get; set; }
+
+		public int NumericPrecision { get; set; }
+
+		public int NumericPrecisionRadix { get; set; }
+
+		public int NumericScale { get; set; }
+
+		public int DateTimePrecision { get; set; }
+
+		public string CharacterSetName { get; set; }
+
+		public string CollationCatalog { get; set; }
+
+		public string CollationSchema { get; set; }
+
+		public string CollationName { get; set; }
+
+		public bool IsIdentity { get; set; }
 	}
 }

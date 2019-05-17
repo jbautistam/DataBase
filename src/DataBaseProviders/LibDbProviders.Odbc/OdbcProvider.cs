@@ -2,14 +2,16 @@
 using System.Data;
 using System.Data.Odbc;
 
+using Bau.Libraries.LibDbProviders.Base;
 using Bau.Libraries.LibDbProviders.Base.Parameters;
+using Bau.Libraries.LibDbProviders.Base.Schema;
 
-namespace Bau.Libraries.LibDbProviders.Base.Providers.ODBC
+namespace Bau.Libraries.LibDbProviders.Odbc
 {
 	/// <summary>
 	///		Proveedor para ODBC
 	/// </summary>
-	public class OdbcProvider : DBProviderBase
+	public class OdbcProvider : DbProviderBase
 	{ 
 		public OdbcProvider(IConnectionString connectionString) : base(connectionString) {}
 
@@ -32,7 +34,7 @@ namespace Bau.Libraries.LibDbProviders.Base.Providers.ODBC
 		/// <summary>
 		///		Obtiene un parámetro SQLServer a partir de un parámetro genérico
 		/// </summary>
-		protected override IDataParameter ConvertParameter(ParameterDB parameter)
+		protected override IDataParameter ConvertParameter(ParameterDb parameter)
 		{ 
 			if (parameter.Direction == ParameterDirection.ReturnValue)
 				return new OdbcParameter(parameter.Name, OdbcType.Int);
@@ -58,7 +60,7 @@ namespace Bau.Libraries.LibDbProviders.Base.Providers.ODBC
 		/// <summary>
 		///		Obtiene el esquema
 		/// </summary>
-		public override Schema.SchemaDbModel GetSchema()
+		public override SchemaDbModel GetSchema()
 		{
 			return new OdbcSchemaReader().GetSchema(this);
 		}

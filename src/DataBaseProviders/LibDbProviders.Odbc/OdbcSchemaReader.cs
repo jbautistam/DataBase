@@ -4,9 +4,10 @@ using System.Data;
 using System.Data.Odbc;
 using System.Linq;
 
+using Bau.Libraries.LibDbProviders.Base;
 using Bau.Libraries.LibDbProviders.Base.Schema;
 
-namespace Bau.Libraries.LibDbProviders.Base.Providers.ODBC
+namespace Bau.Libraries.LibDbProviders.Odbc
 {
 	/// <summary>
 	///		Lector de esquema para ODBC

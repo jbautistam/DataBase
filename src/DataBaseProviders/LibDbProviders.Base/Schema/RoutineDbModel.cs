@@ -5,21 +5,30 @@ namespace Bau.Libraries.LibDbProviders.Base.Schema
 	/// <summary>
 	///		Clase con los datos de una rutina
 	/// </summary>
-	public class RoutineDbModel
+	public class RoutineDbModel : BaseSchemaDbModel
 	{
+		// Enumerados
 		/// <summary>
-		///		Esquema al que está asociada la rutina
+		///		Tipo de rutina
 		/// </summary>
-		public string Schema { get; set; }
-
-		/// <summary>
-		///		Nombre de la rutina
-		/// </summary>
-		public string Name { get; set; }
+		public enum RoutineType
+		{
+			/// <summary>Desconocido. No se debería utilizar</summary>
+			Unknown,
+			/// <summary>Procedimiento</summary>
+			Procedure,
+			/// <summary>Función</summary>
+			Function
+		}
 
 		/// <summary>
 		///		Contenido de la rutina 
 		/// </summary>
 		public string Content { get; set; }
+
+		/// <summary>
+		///		Tipo de la rutina
+		/// </summary>
+		public RoutineType Type { get; set; }
 	}
 }

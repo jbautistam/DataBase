@@ -1,15 +1,17 @@
-using System;
+锘縰sing System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace Bau.Libraries.LibDBSchema.DataSchema
+namespace Bau.Libraries.LibDbProviders.Base.Schema
 {
 	/// <summary>
-	///		Clase con los datos de una restricci髇
+	///		Clase con los datos de una restricci贸n
 	/// </summary>
-	public class SchemaConstraint : SchemaItem
+	public class ConstraintDbModel : BaseSchemaDbModel
 	{ 
 		// Enumerados
 		/// <summary>
-		///		Tipo de restricci髇
+		///		Tipo de restricci贸n
 		/// </summary>
 		public enum ConstraintType
 		{
@@ -17,14 +19,10 @@ namespace Bau.Libraries.LibDBSchema.DataSchema
 			Unknown,
 			/// <summary>Clave primaria</summary>
 			PrimaryKey,
-			/// <summary>Clave for醤ea</summary>
+			/// <summary>Clave for谩nea</summary>
 			ForeignKey,
 			/// <summary>Unico</summary>
 			Unique
-		}
-
-		public SchemaConstraint(Schema parent) : base(parent)
-		{
 		}
 
 		/// <summary>
@@ -38,12 +36,12 @@ namespace Bau.Libraries.LibDBSchema.DataSchema
 		public string Column { get; set; }
 
 		/// <summary>
-		///		Tipo de restricci髇
+		///		Tipo de restricci贸n
 		/// </summary>
 		public ConstraintType Type { get; set; }
 
 		/// <summary>
-		///		Posici髇 de la restricci髇
+		///		Posici贸n de la restricci贸n
 		/// </summary>
 		public int Position { get; set; }
 	}

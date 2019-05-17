@@ -335,7 +335,8 @@ namespace Bau.Libraries.LibReports.Renderer.Html
 				AppendRight($"<{type}>");
 				// Elementos de la lista
 				foreach (ListItemReport listItem in list.ListItems)
-				{ // Cabecera
+				{ 
+					// Cabecera
 					AppendRight("<li>");
 					// Texto
 					if (!listItem.Text.IsEmpty())
@@ -515,19 +516,19 @@ namespace Bau.Libraries.LibReports.Renderer.Html
 					switch (border.Type)
 					{
 						case BorderStyleReport.BorderType.Dash:
-							style += " dashed";
+								style += " dashed";
 							break;
 						case BorderStyleReport.BorderType.Dot:
-							style += " dotted";
+								style += " dotted";
 							break;
 						case BorderStyleReport.BorderType.DotDash:
-							style += " dashed";
+								style += " dashed";
 							break;
 						case BorderStyleReport.BorderType.Double:
-							style += " double";
+								style += " double";
 							break;
 						default:
-							style += " solid";
+								style += " solid";
 							break;
 					}
 					// Color

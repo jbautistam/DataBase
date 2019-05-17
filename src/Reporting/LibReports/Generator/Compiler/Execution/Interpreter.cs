@@ -28,8 +28,8 @@ namespace Bau.Libraries.LibReports.Generator.Compiler.Execution
 
 				// Depuración
 				#if DEBUG
-				System.Diagnostics.Debug.WriteLine("Depuración del programa");
-				program.Debug();
+					System.Diagnostics.Debug.WriteLine("Depuración del programa");
+					program.Debug();
 				#endif
 				// Añade la pila de datos a la colección de variables
 				AddStackData(symbolsLocal);

@@ -3,6 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Bau.Libraries.LibDbProviders.Odbc</RootNamespace>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>Bau.Libraries.LibDbProviders.Odbc</PackageId>
+    <Authors>Jose Antonio Bautista Montejo</Authors>
+    <Description>Proveedor de base de datos para ODBC</Description>
+    <PackageProjectUrl>https://github.com/jbautistam/DataBase</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

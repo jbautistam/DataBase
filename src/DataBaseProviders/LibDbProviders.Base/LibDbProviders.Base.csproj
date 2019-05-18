@@ -4,6 +4,10 @@
 	  <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Bau.Libraries.LibDbProviders.Base</RootNamespace>
+    <PackageId>Bau.Libraries.LibDbProviders.Base</PackageId>
+    <Authors>Jose Antonio Bautista Montejo</Authors>
+    <Description>Clase base para el manejo de proveedores de base de datos</Description>
+    <RepositoryUrl>https://github.com/jbautistam/DataBase</RepositoryUrl>
   </PropertyGroup>
 
 </Project>

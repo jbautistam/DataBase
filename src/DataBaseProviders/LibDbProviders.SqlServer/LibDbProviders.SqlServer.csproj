@@ -4,6 +4,10 @@
 	  <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Bau.Libraries.LibDbProviders.SqlServer</RootNamespace>
+    <PackageId>Bau.Libraries.LibDbProviders.SqlServer</PackageId>
+    <Authors>Jose Antonio Bautista Montejo</Authors>
+    <Description>Proveedor de base de datos para SQL Server</Description>
+    <PackageProjectUrl>https://github.com/jbautistam/DataBase</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Odbc;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Bau.Libraries.LibDbProviders.Base;
 using Bau.Libraries.LibDbProviders.Base.Schema;
 
-namespace Bau.Libraries.LibDbProviders.Odbc
+namespace Bau.Libraries.LibDbProviders.ODBC
 {
 	/// <summary>
 	///		Lector de esquema para ODBC
@@ -17,38 +19,44 @@ namespace Bau.Libraries.LibDbProviders.Odbc
 		/// <summary>
 		///		Obtiene el esquema
 		/// </summary>
-		internal SchemaDbModel GetSchema(OdbcProvider provider)
+		internal async Task<SchemaDbModel> GetSchemaAsync(OdbcProvider provider, TimeSpan timeout, CancellationToken cancellationToken)
 		{
-			var schema = new SchemaDbModel();
-			var tables = new List<string>();
-			OdbcConnection connection = new OdbcConnection(provider.ConnectionString.ConnectionString);
+			SchemaDbModel schema = new SchemaDbModel();
+			List<string> tables = new List<string>();
 
-				// Abre la conexión
-				connection.Open();
-				// Obtiene las tablas
-				using (DataTable table = connection.GetSchema("Tables"))
+				// Carga el esquema
+				using (OdbcConnection connection = new OdbcConnection(provider.ConnectionString.ConnectionString))
 				{
-					foreach (DataRow row in table.Rows)
-						if (row.IisNull<string>("Table_Type").Equals("TABLE", StringComparison.CurrentCultureIgnoreCase))
-							tables.Add(row.IisNull<string>("Table_Name"));
+					// Abre la conexión
+					await connection.OpenAsync(cancellationToken);
+					// Obtiene las tablas
+					using (DataTable table = connection.GetSchema("Tables"))
+					{
+						foreach (DataRow row in table.Rows)
+							if (!cancellationToken.IsCancellationRequested && 
+									row.IisNull<string>("Table_Type").Equals("TABLE", StringComparison.CurrentCultureIgnoreCase))
+								tables.Add(row.IisNull<string>("Table_Name"));
+					}
+					// Carga las columnas
+					if (!cancellationToken.IsCancellationRequested)
+						using (DataTable table = connection.GetSchema("Columns"))
+						{
+							foreach (DataRow row in table.Rows)
+								if (!cancellationToken.IsCancellationRequested &&
+										tables.FirstOrDefault(item => item.Equals(row.IisNull<string>("Table_Name"), StringComparison.CurrentCultureIgnoreCase)) != null)
+									schema.Add(true,
+											   row.IisNull<string>("Table_Schem"),
+											   row.IisNull<string>("Table_Name"),
+											   row.IisNull<string>("Column_Name"),
+											   GetFieldType(row.IisNull<string>("Type_Name")),
+											   row.IisNull<string>("Type_Name"),
+											   row.IisNull<int>("Column_Size", 0),
+											   false,
+											   row.IisNull<string>("Is_Nullable").Equals("No", StringComparison.CurrentCultureIgnoreCase));
+						}
+					// Cierra la conexión
+					connection.Close();
 				}
-				// Carga las columnas
-				using (DataTable table = connection.GetSchema("Columns"))
-				{
-					foreach (DataRow row in table.Rows)
-						if (tables.FirstOrDefault(item => item.Equals(row.IisNull<string>("Table_Name"), StringComparison.CurrentCultureIgnoreCase)) != null)
-							schema.Add(true,
-									   row.IisNull<string>("Table_Schem"),
-									   row.IisNull<string>("Table_Name"),
-									   row.IisNull<string>("Column_Name"),
-									   GetFieldType(row.IisNull<string>("Type_Name")),
-									   row.IisNull<string>("Type_Name"),
-									   row.IisNull<int>("Column_Size", 0),
-									   false,
-									   row.IisNull<string>("Is_Nullable").Equals("No", StringComparison.CurrentCultureIgnoreCase));
-				}
-				// Cierra la conexión
-				connection.Close();
 				// Devuelve el esquema
 				return schema;
 		}

@@ -4,19 +4,18 @@ using System.Data;
 using NpgsqlTypes;
 using Npgsql;
 using Bau.Libraries.LibDbProviders.Base;
-using Bau.Libraries.LibDbProviders.Base.Providers;
 using Bau.Libraries.LibDbProviders.Base.Parameters;
 
-namespace Bau.Libraries.LibPostgreSqlProvider
+namespace Bau.Libraries.LibDbProviders.PostgreSql
 {
 	/// <summary>
 	///		Proveedor para PostgreSql
 	/// </summary>
-	public class PostgreSqlProvider : DBProviderBase
+	public class PostgreSqlProvider : DbProviderBase
 	{
 		public PostgreSqlProvider(IConnectionString connectionString) : base(connectionString) 
 		{ 
-			SqlParser = new Parser.PostgreSqlSelectParser();
+			SqlHelper = new Parser.PostgreSqlSelectParser();
 		}
 
 		/// <summary>
@@ -30,7 +29,7 @@ namespace Bau.Libraries.LibPostgreSqlProvider
 		/// <summary>
 		///		Obtiene un comando
 		/// </summary>
-		protected override IDbCommand GetCommand(string text)
+		protected override IDbCommand GetCommand(string text, TimeSpan? timeout = null)
 		{
 			return new NpgsqlCommand(text, Connection as NpgsqlConnection, Transaction as NpgsqlTransaction);
 		}
@@ -38,7 +37,7 @@ namespace Bau.Libraries.LibPostgreSqlProvider
 		/// <summary>
 		///		Convierte un parámetro
 		/// </summary>
-		protected override IDataParameter ConvertParameter(ParameterDB parameter)
+		protected override IDataParameter ConvertParameter(ParameterDb parameter)
 		{
 			// Convierte el parámetro
 			if (parameter.Direction == ParameterDirection.ReturnValue)
@@ -68,9 +67,14 @@ namespace Bau.Libraries.LibPostgreSqlProvider
 		/// <summary>
 		///		Obtiene el esquema
 		/// </summary>
-		public override LibDbProviders.Base.Schema.SchemaDbModel GetSchema()
+		public async override System.Threading.Tasks.Task<Base.Schema.SchemaDbModel> GetSchemaAsync(TimeSpan timeout, System.Threading.CancellationToken cancellationToken)
 		{
-			return new Parser.PostgreSqlSchemaReader().GetSchema(this);
+			return await new Parser.PostgreSqlSchemaReader().GetSchemaAsync(this, timeout, cancellationToken);
 		}
+
+		/// <summary>
+		///		Implementación del sistema de tratamiento de cadenas SQL
+		/// </summary>
+		public override Base.SqlTools.ISqlHelper SqlHelper { get; }
 	}
 }

@@ -3,7 +3,7 @@
 using Bau.Libraries.LibDbProviders.Base.RepositoryData;
 using Bau.Libraries.LibDbProviders.Base.Parameters;
 
-namespace Bau.Libraries.LibPostgreSqlProvider
+namespace Bau.Libraries.LibDbProviders.PostgreSql
 {
 	/// <summary>
 	///		Clase para ayuda de repository de PostgreSql
@@ -17,7 +17,7 @@ namespace Bau.Libraries.LibPostgreSqlProvider
 		/// <summary>
 		///		Devuelve el valor identidad
 		/// </summary>
-		protected override int? GetIdentityValue(ParametersDBCollection parametersDB)
+		protected override int? GetIdentityValue(ParametersDbCollection parametersDB)
 		{ 
 			return (int?) parametersDB["@return_code"].Value;
 		}

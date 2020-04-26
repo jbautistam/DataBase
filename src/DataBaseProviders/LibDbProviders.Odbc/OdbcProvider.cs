@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Data;
 using System.Data.Odbc;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Bau.Libraries.LibDbProviders.Base;
 using Bau.Libraries.LibDbProviders.Base.Parameters;
-using Bau.Libraries.LibDbProviders.Base.Schema;
 
-namespace Bau.Libraries.LibDbProviders.Odbc
+namespace Bau.Libraries.LibDbProviders.ODBC
 {
 	/// <summary>
 	///		Proveedor para ODBC
 	/// </summary>
 	public class OdbcProvider : DbProviderBase
 	{ 
-		public OdbcProvider(IConnectionString connectionString) : base(connectionString) {}
+		public OdbcProvider(IConnectionString connectionString) : base(connectionString) 
+		{
+			SqlHelper = new Parser.OdbcSelectParser();
+		}
 
 		/// <summary>
 		///		Crea la conexión
@@ -26,7 +30,7 @@ namespace Bau.Libraries.LibDbProviders.Odbc
 		/// <summary>
 		///		Obtiene un comando
 		/// </summary>
-		protected override IDbCommand GetCommand(string text)
+		protected override IDbCommand GetCommand(string text, TimeSpan? timeout = null)
 		{ 
 			return new OdbcCommand(text, Connection as OdbcConnection);
 		}
@@ -60,9 +64,14 @@ namespace Bau.Libraries.LibDbProviders.Odbc
 		/// <summary>
 		///		Obtiene el esquema
 		/// </summary>
-		public override SchemaDbModel GetSchema()
+		public override async Task<Base.Schema.SchemaDbModel> GetSchemaAsync(TimeSpan timeout, CancellationToken cancellationToken)
 		{
-			return new OdbcSchemaReader().GetSchema(this);
+			return await new OdbcSchemaReader().GetSchemaAsync(this, timeout, cancellationToken);
 		}
+
+		/// <summary>
+		///		Implementación del sistema de tratamiento de cadenas SQL
+		/// </summary>
+		public override Base.SqlTools.ISqlHelper SqlHelper { get; }
 	}
 }

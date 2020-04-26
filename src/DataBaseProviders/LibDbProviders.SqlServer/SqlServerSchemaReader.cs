@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Bau.Libraries.LibDbProviders.Base;
 using Bau.Libraries.LibDbProviders.Base.Parameters;
@@ -15,7 +18,7 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 		/// <summary>
 		///		Clase para la carga de un esquema de una base de datos SQL Server
 		/// </summary>
-		internal SchemaDbModel GetSchema(SqlServerProvider provider)
+		internal async Task<SchemaDbModel> GetSchemaAsync(SqlServerProvider provider, TimeSpan timeout, CancellationToken cancellationToken)
 		{
 			SchemaDbModel schema = new SchemaDbModel();
 
@@ -23,12 +26,12 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 				using (SqlServerProvider connection = new SqlServerProvider(provider.ConnectionString))
 				{
 					// Abre la conexión
-					connection.Open();
+					await connection.OpenAsync(cancellationToken);
 					// Carga los datos del esquema
-					LoadTables(connection, schema);
-					LoadTriggers(connection, schema);
-					LoadViews(connection, schema);
-					LoadRoutines(connection, schema);
+					await LoadTablesAsync(connection, schema, timeout, cancellationToken);
+					await LoadTriggersAsync(connection, schema, timeout, cancellationToken);
+					await LoadViewsAsync(connection, schema, timeout, cancellationToken);
+					await LoadRoutinesAsync(connection, schema, timeout, cancellationToken);
 					// Cierra la conexión
 					connection.Close();
 				}
@@ -39,7 +42,7 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 		/// <summary>
 		///		Carga las tablas de un esquema
 		/// </summary>
-		private void LoadTables(SqlServerProvider connection, SchemaDbModel schema)
+		private async Task LoadTablesAsync(SqlServerProvider connection, SchemaDbModel schema, TimeSpan timeout, CancellationToken cancellationToken)
 		{
 			string sql = @"SELECT Tables.TABLE_CATALOG, Tables.TABLE_SCHEMA, Tables.TABLE_NAME,
 								   Tables.TABLE_TYPE, Objects.Create_Date, Objects.Modify_Date, Properties.Value AS Description
@@ -52,72 +55,73 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 							 ORDER BY Tables.TABLE_NAME";
 
 				// Carga las tablas
-				using (IDataReader tables = connection.ExecuteReader(sql, null, CommandType.Text))
+				using (DbDataReader reader = await connection.ExecuteReaderAsync(sql, null, CommandType.Text, timeout, cancellationToken))
 				{ 
 					// Recorre la colección de registros
-					while (tables.Read())
+					while (!cancellationToken.IsCancellationRequested && await reader.ReadAsync(cancellationToken))
 					{
 						TableDbModel table = new TableDbModel();
 
 							// Asigna los datos del registro al objeto
-							table.Catalog = (string) tables.IisNull("TABLE_CATALOG");
-							table.Schema = (string) tables.IisNull("TABLE_SCHEMA");
-							table.Name = (string) tables.IisNull("TABLE_NAME");
-							table.CreatedAt = (DateTime) tables.IisNull("Create_Date");
-							table.UpdatedAt = (DateTime) tables.IisNull("Modify_Date");
-							table.Description = (string) tables.IisNull("Description");
+							table.Catalog = (string) reader.IisNull("TABLE_CATALOG");
+							table.Schema = (string) reader.IisNull("TABLE_SCHEMA");
+							table.Name = (string) reader.IisNull("TABLE_NAME");
+							table.CreatedAt = (DateTime) reader.IisNull("Create_Date");
+							table.UpdatedAt = (DateTime) reader.IisNull("Modify_Date");
+							table.Description = (string) reader.IisNull("Description");
 							// Añade el objeto a la colección
 							schema.Tables.Add(table);
 					}
 					// Cierra el recordset
-					tables.Close();
+					reader.Close();
 				}
 				// Carga los datos de las tablas
 				foreach (TableDbModel table in schema.Tables)
 				{
-					LoadColumns(connection, table);
-					LoadConstraints(connection, table);
+					await LoadColumnsAsync(connection, table, timeout, cancellationToken);
+					await LoadConstraintsAsync(connection, table, timeout, cancellationToken);
 				}
 		}
 
 		/// <summary>
 		///		Carga la definición de vistas
 		/// </summary>
-		private void LoadViews(SqlServerProvider connection, SchemaDbModel schema)
+		private async Task LoadViewsAsync(SqlServerProvider connection, SchemaDbModel schema, TimeSpan timeout, CancellationToken cancellationToken)
 		{
 			string sql = @"SELECT Table_Catalog, Table_Schema, Table_Name, View_Definition, Check_Option, Is_Updatable
 							  FROM Information_Schema.Views
 							  ORDER BY Table_Name";
 
 				// Carga las vistas
-				using (IDataReader viewsReader = connection.ExecuteReader(sql, null, CommandType.Text))
-				{ // Lee los registros
-					while (viewsReader.Read())
+				using (DbDataReader reader = await connection.ExecuteReaderAsync(sql, null, CommandType.Text, timeout, cancellationToken))
+				{ 
+					// Lee los registros
+					while (!cancellationToken.IsCancellationRequested && await reader.ReadAsync(cancellationToken))
 					{
 						ViewDbModel view = new ViewDbModel();
 
 							// Asigna los datos al objeto
-							view.Catalog = (string) viewsReader.IisNull("Table_Catalog");
-							view.Schema = (string) viewsReader.IisNull("Table_Schema");
-							view.Name = (string) viewsReader.IisNull("Table_Name");
-							view.Definition = (string) viewsReader.IisNull("View_Definition");
-							view.CheckOption = (string) viewsReader.IisNull("Check_Option");
-							view.IsUpdatable = !(((string) viewsReader.IisNull("Is_Updatable")).Equals("NO", StringComparison.CurrentCultureIgnoreCase));
+							view.Catalog = (string) reader.IisNull("Table_Catalog");
+							view.Schema = (string) reader.IisNull("Table_Schema");
+							view.Name = (string) reader.IisNull("Table_Name");
+							view.Definition = (string) reader.IisNull("View_Definition");
+							view.CheckOption = (string) reader.IisNull("Check_Option");
+							view.IsUpdatable = !(((string) reader.IisNull("Is_Updatable")).Equals("NO", StringComparison.CurrentCultureIgnoreCase));
 							// Añade el objeto a la colección
 							schema.Views.Add(view);
 					}
 					// Cierra el recordset
-					viewsReader.Close();
+					reader.Close();
 				}
 				// Carga las columnas de la vista
 				foreach (ViewDbModel view in schema.Views)
-					LoadColumns(connection, view);
+					await LoadColumnsAsync(connection, view, timeout, cancellationToken);
 		}
 
 		/// <summary>
 		///		Carga los triggers de un esquema
 		/// </summary>
-		private void LoadTriggers(SqlServerProvider connection, SchemaDbModel schema)
+		private async Task LoadTriggersAsync(SqlServerProvider connection, SchemaDbModel schema, TimeSpan timeout, CancellationToken cancellationToken)
 		{
 			string sql = @"SELECT tmpTables.name AS DS_Tabla, tmpTrigger.name AS DS_Trigger_Name,
 								   USER_NAME(tmpTrigger.uid) AS DS_User_Name, tmpTrigger.category AS NU_Category,
@@ -146,67 +150,67 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 							  ORDER BY tmpTables.Name, tmpTrigger.Name";
 
 				// Carga los desencadenadores
-				using (IDataReader triggers = connection.ExecuteReader(sql, null, CommandType.Text))
+				using (DbDataReader reader = await connection.ExecuteReaderAsync(sql, null, CommandType.Text, timeout, cancellationToken))
 				{ 
 					// Recorre la colección de registros
-					while (triggers.Read())
+					while (!cancellationToken.IsCancellationRequested && await reader.ReadAsync(cancellationToken))
 					{
 						TriggerDbModel trigger = new TriggerDbModel();
 
 							// Asigna los datos del registro al objeto
 							trigger.Catalog = "TABLE_CATALOG"; // clsBaseDB.iisNull(rdoTables, "TABLE_CATALOG") as string;
 							trigger.Schema = "TABLE_SCHEMA"; // clsBaseDB.iisNull(rdoTables, "TABLE_SCHEMA") as string;
-							trigger.Table = (string) triggers.IisNull("DS_Tabla");
-							trigger.Name = (string) triggers.IisNull("DS_Trigger_Name");
-							trigger.UserName = (string) triggers.IisNull("DS_User_Name");
-							trigger.Category = (int) triggers.IisNull("NU_Category");
-							trigger.IsExecuted = (bool) triggers.IisNull("IsExecuted");
-							trigger.IsExecutionAnsiNullsOn = (bool) triggers.IisNull("ExecIsAnsiNullsOn");
-							trigger.IsExecutionQuotedIdentOn = (bool) triggers.IisNull("ExecIsQuotedIdentOn");
-							trigger.IsAnsiNullsOn = (bool) triggers.IisNull("IsAnsiNullsOn");
-							trigger.IsQuotedIdentOn = (bool) triggers.IisNull("IsQuotedIdentOn");
-							trigger.IsExecutionAfterTrigger = (bool) triggers.IisNull("ExecIsAfterTrigger");
-							trigger.IsExecutionDeleteTrigger = (bool) triggers.IisNull("ExecIsDeleteTrigger");
-							trigger.IsExecutionFirstDeleteTrigger = (bool) triggers.IisNull("ExecIsFirstDeleteTrigger");
-							trigger.IsExecutionFirstInsertTrigger = (bool) triggers.IisNull("ExecIsFirstInsertTrigger");
-							trigger.IsExecutionFirstUpdateTrigger = (bool) triggers.IisNull("ExecIsFirstUpdateTrigger");
-							trigger.IsExecutionInsertTrigger = (bool) triggers.IisNull("ExecIsInsertTrigger");
-							trigger.IsExecutionInsteadOfTrigger = (bool) triggers.IisNull("ExecIsInsteadOfTrigger");
-							trigger.IsExecutionLastDeleteTrigger = (bool) triggers.IisNull("ExecIsLastDeleteTrigger");
-							trigger.IsExecutionLastInsertTrigger = (bool) triggers.IisNull("ExecIsLastInsertTrigger");
-							trigger.IsExecutionLastUpdateTrigger = (bool) triggers.IisNull("ExecIsLastUpdateTrigger");
-							trigger.IsExecutionTriggerDisabled = (bool) triggers.IisNull("ExecIsTriggerDisabled");
-							trigger.IsExecutionUpdateTrigger = (bool) triggers.IisNull("ExecIsUpdateTrigger");
-							trigger.CreatedAt = ((DateTime?) triggers.IisNull("FE_Create")) ?? DateTime.Now;
-							trigger.DateReference = (DateTime?) triggers.IisNull("FE_Reference");
+							trigger.Table = (string) reader.IisNull("DS_Tabla");
+							trigger.Name = (string) reader.IisNull("DS_Trigger_Name");
+							trigger.UserName = (string) reader.IisNull("DS_User_Name");
+							trigger.Category = (int) reader.IisNull("NU_Category");
+							trigger.IsExecuted = (bool) reader.IisNull("IsExecuted");
+							trigger.IsExecutionAnsiNullsOn = (bool) reader.IisNull("ExecIsAnsiNullsOn");
+							trigger.IsExecutionQuotedIdentOn = (bool) reader.IisNull("ExecIsQuotedIdentOn");
+							trigger.IsAnsiNullsOn = (bool) reader.IisNull("IsAnsiNullsOn");
+							trigger.IsQuotedIdentOn = (bool) reader.IisNull("IsQuotedIdentOn");
+							trigger.IsExecutionAfterTrigger = (bool) reader.IisNull("ExecIsAfterTrigger");
+							trigger.IsExecutionDeleteTrigger = (bool) reader.IisNull("ExecIsDeleteTrigger");
+							trigger.IsExecutionFirstDeleteTrigger = (bool) reader.IisNull("ExecIsFirstDeleteTrigger");
+							trigger.IsExecutionFirstInsertTrigger = (bool) reader.IisNull("ExecIsFirstInsertTrigger");
+							trigger.IsExecutionFirstUpdateTrigger = (bool) reader.IisNull("ExecIsFirstUpdateTrigger");
+							trigger.IsExecutionInsertTrigger = (bool) reader.IisNull("ExecIsInsertTrigger");
+							trigger.IsExecutionInsteadOfTrigger = (bool) reader.IisNull("ExecIsInsteadOfTrigger");
+							trigger.IsExecutionLastDeleteTrigger = (bool) reader.IisNull("ExecIsLastDeleteTrigger");
+							trigger.IsExecutionLastInsertTrigger = (bool) reader.IisNull("ExecIsLastInsertTrigger");
+							trigger.IsExecutionLastUpdateTrigger = (bool) reader.IisNull("ExecIsLastUpdateTrigger");
+							trigger.IsExecutionTriggerDisabled = (bool) reader.IisNull("ExecIsTriggerDisabled");
+							trigger.IsExecutionUpdateTrigger = (bool) reader.IisNull("ExecIsUpdateTrigger");
+							trigger.CreatedAt = ((DateTime?) reader.IisNull("FE_Create")) ?? DateTime.Now;
+							trigger.DateReference = (DateTime?) reader.IisNull("FE_Reference");
 							// Añade el objeto a la colección (si es una tabla)
 							schema.Triggers.Add(trigger);
 					}
 					// Cierra el recordset
-					triggers.Close();
+					reader.Close();
 				}
 				// Carga el contenido de los triggers
 				foreach (TriggerDbModel trigger in schema.Triggers)
-					trigger.Content = LoadHelpText(connection, trigger.Name);
+					trigger.Content = await LoadHelpTextAsync(connection, trigger.Name, timeout, cancellationToken);
 		}
 
 		/// <summary>
 		///		Carga el texto de una función, procedimiento, trigger ...
 		/// </summary>
-		private string LoadHelpText(SqlServerProvider connection, string name)
+		private async Task<string> LoadHelpTextAsync(SqlServerProvider connection, string name, TimeSpan timeout, CancellationToken cancellationToken)
 		{
-			string text = "";
+			string text = string.Empty;
 
 				// Obtiene el texto resultante de llamar a la rutina sp_helptext
 				try
 				{
-					using (IDataReader textReader = connection.ExecuteReader($"EXEC sp_helptext '{name}'", null, CommandType.Text))
+					using (DbDataReader reader = await connection.ExecuteReaderAsync($"EXEC sp_helptext '{name}'", null, CommandType.Text, timeout, cancellationToken))
 					{ 
 						// Obtiene el texto
-						while (textReader.Read())
-							text += (string) textReader.IisNull("Text");
+						while (!cancellationToken.IsCancellationRequested && await reader.ReadAsync(cancellationToken))
+							text += (string) reader.IisNull("Text") + Environment.NewLine;
 						// Cierra el recordset
-						textReader.Close();
+						reader.Close();
 					}
 				}
 				catch { }
@@ -217,7 +221,7 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 		/// <summary>
 		///		Carga las rutinas de la base de datos
 		/// </summary>
-		private void LoadRoutines(SqlServerProvider connection, SchemaDbModel schema)
+		private async Task LoadRoutinesAsync(SqlServerProvider connection, SchemaDbModel schema, TimeSpan timeout, CancellationToken cancellationToken)
 		{
 			string sql = @"SELECT Routine_Catalog AS Table_Catalog, Routine_Schema AS Table_Schema,
 									Routine_Name AS Table_Name, Routine_Type, Routine_Definition
@@ -225,24 +229,24 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 								ORDER BY Routine_Name";
 
 				// Carga los datos
-				using (IDataReader routinesReader = connection.ExecuteReader(sql, null, CommandType.Text))
+				using (DbDataReader reader = await connection.ExecuteReaderAsync(sql, null, CommandType.Text, timeout, cancellationToken))
 				{ 
 					// Lee los registros
-					while (routinesReader.Read())
+					while (!cancellationToken.IsCancellationRequested && await reader.ReadAsync(cancellationToken))
 					{
 						RoutineDbModel routine = new RoutineDbModel();
 
 							// Asigna los datos del recordset al objeto
-							routine.Catalog = (string) routinesReader.IisNull("Table_Catalog");
-							routine.Schema = (string) routinesReader.IisNull("Table_Schema");
-							routine.Name = (string) routinesReader.IisNull("Table_Name");
-							routine.Type = GetRoutineType((string) routinesReader.IisNull("Routine_Type"));
-							routine.Content = (string) routinesReader.IisNull("Routine_Definition");
+							routine.Catalog = (string) reader.IisNull("Table_Catalog");
+							routine.Schema = (string) reader.IisNull("Table_Schema");
+							routine.Name = (string) reader.IisNull("Table_Name");
+							routine.Type = GetRoutineType((string) reader.IisNull("Routine_Type"));
+							routine.Content = (string) reader.IisNull("Routine_Definition");
 							// Añade el objeto a la colección
 							schema.Routines.Add(routine);
 					}
 					// Cierra el recordset
-					routinesReader.Close();
+					reader.Close();
 				}
 		}
 
@@ -262,7 +266,7 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 		/// <summary>
 		///		Carga las restricciones de una tabla
 		/// </summary>
-		private void LoadConstraints(SqlServerProvider connection, TableDbModel table)
+		private async Task LoadConstraintsAsync(SqlServerProvider connection, TableDbModel table, TimeSpan timeout, CancellationToken cancellationToken)
 		{
 			ParametersDbCollection parameters = new ParametersDbCollection();
 			string sql = @"SELECT TableConstraints.Table_Catalog, TableConstraints.Table_Schema, TableConstraints.Table_Name,
@@ -288,26 +292,26 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 				parameters.Add("@Table_Schema", table.Schema);
 				parameters.Add("@Table_Name", table.Name);
 				// Carga los datos
-				using (IDataReader constraintReader = connection.ExecuteReader(sql, parameters, CommandType.Text))
+				using (DbDataReader reader = await connection.ExecuteReaderAsync(sql, parameters, CommandType.Text, timeout, cancellationToken))
 				{ 
 					// Lee los datos
-					while (constraintReader.Read())
+					while (!cancellationToken.IsCancellationRequested && await reader.ReadAsync(cancellationToken))
 					{
 						ConstraintDbModel constraint = new ConstraintDbModel();
 
 							// Asigna los datos del registro
-							constraint.Catalog = (string) constraintReader.IisNull("Table_Catalog");
-							constraint.Schema = (string) constraintReader.IisNull("Table_Schema");
-							constraint.Table = (string) constraintReader.IisNull("Table_Name");
-							constraint.Column = (string) constraintReader.IisNull("Column_Name");
-							constraint.Name = (string) constraintReader.IisNull("Constraint_Name");
-							constraint.Type = GetConstratype((string) constraintReader.IisNull("Constraint_Type"));
-							constraint.Position = (int) constraintReader.IisNull("Ordinal_Position");
+							constraint.Catalog = (string) reader.IisNull("Table_Catalog");
+							constraint.Schema = (string) reader.IisNull("Table_Schema");
+							constraint.Table = (string) reader.IisNull("Table_Name");
+							constraint.Column = (string) reader.IisNull("Column_Name");
+							constraint.Name = (string) reader.IisNull("Constraint_Name");
+							constraint.Type = GetConstratype((string) reader.IisNull("Constraint_Type"));
+							constraint.Position = (int) reader.IisNull("Ordinal_Position");
 							// Añade la restricción a la colección
 							table.Constraints.Add(constraint);
 					}
 					// Cierra el recordset
-					constraintReader.Close();
+					reader.Close();
 				}
 		}
 
@@ -329,7 +333,7 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 		/// <summary>
 		///		Carga las columnas de una tabla
 		/// </summary>
-		private void LoadColumns(SqlServerProvider connection, TableDbModel table)
+		private async Task LoadColumnsAsync(SqlServerProvider connection, TableDbModel table, TimeSpan timeout, CancellationToken cancellationToken)
 		{
 			ParametersDbCollection parameters = new ParametersDbCollection();
 			string sql;
@@ -361,42 +365,42 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 								AND Columns.Table_Name = @Table_Name
 						  ORDER BY Ordinal_Position";
 				// Carga los datos
-				using (IDataReader columnsReader = connection.ExecuteReader(sql, parameters, CommandType.Text))
+				using (DbDataReader reader = await connection.ExecuteReaderAsync(sql, parameters, CommandType.Text, timeout, cancellationToken))
 				{ 
 					// Lee los datos
-					while (columnsReader.Read())
+					while (!cancellationToken.IsCancellationRequested && await reader.ReadAsync(cancellationToken))
 					{
 						FieldDbModel column = new FieldDbModel();
 
 							// Asigna los datos del registro
-							column.Name = (string) columnsReader.IisNull("Column_Name") as string;
-							column.OrdinalPosition = (int) columnsReader.IisNull("Ordinal_Position", 0);
-							column.Default = (string) columnsReader.IisNull("Column_Default");
-							column.IsRequired = (((string) columnsReader.IisNull("Is_Nullable")).Equals("no", StringComparison.CurrentCultureIgnoreCase));
-							column.DbType = (string) columnsReader.IisNull("Data_Type");
-							column.Length = (int) columnsReader.IisNull("Character_Maximum_Length", 0);
-							column.NumericPrecision = (int) columnsReader.IisNull("Numeric_Precision", 0);
-							column.NumericPrecisionRadix = (int) columnsReader.IisNull("Numeric_Precision_Radix", 0);
-							column.NumericScale = (int) columnsReader.IisNull("Numeric_Scale", 0);
-							column.DateTimePrecision = (int) columnsReader.IisNull("DateTime_Precision", 0);
-							column.CharacterSetName = (string) columnsReader.IisNull("Character_Set_Name");
-							column.CollationCatalog = (string) columnsReader.IisNull("Collation_Catalog");
-							column.CollationSchema = (string) columnsReader.IisNull("Collation_Schema");
-							column.CollationName = (string) columnsReader.IisNull("Collation_Name");
-							column.IsIdentity = (bool) columnsReader.IisNull("is_identity");
-							column.Description = (string) columnsReader.IisNull("Description") as string;
+							column.Name = (string) reader.IisNull("Column_Name") as string;
+							column.OrdinalPosition = (int) reader.IisNull("Ordinal_Position", 0);
+							column.Default = (string) reader.IisNull("Column_Default");
+							column.IsRequired = ((string) reader.IisNull("Is_Nullable")).Equals("no", StringComparison.CurrentCultureIgnoreCase);
+							column.DbType = (string) reader.IisNull("Data_Type");
+							column.Length = (int) reader.IisNull("Character_Maximum_Length", 0);
+							column.NumericPrecision = (int) reader.IisNull("Numeric_Precision", 0);
+							column.NumericPrecisionRadix = (int) reader.IisNull("Numeric_Precision_Radix", 0);
+							column.NumericScale = (int) reader.IisNull("Numeric_Scale", 0);
+							column.DateTimePrecision = (int) reader.IisNull("DateTime_Precision", 0);
+							column.CharacterSetName = (string) reader.IisNull("Character_Set_Name");
+							column.CollationCatalog = (string) reader.IisNull("Collation_Catalog");
+							column.CollationSchema = (string) reader.IisNull("Collation_Schema");
+							column.CollationName = (string) reader.IisNull("Collation_Name");
+							column.IsIdentity = (bool) reader.IisNull("is_identity");
+							column.Description = (string) reader.IisNull("Description") as string;
 							// Añade la columna a la colección
 							table.Fields.Add(column);
 					}
 					// Cierra el recordset
-					columnsReader.Close();
+					reader.Close();
 				}
 		}
 
 		/// <summary>
 		///		Carga las columnas de la vista
 		/// </summary>
-		private void LoadColumns(SqlServerProvider connection, ViewDbModel view)
+		private async Task LoadColumnsAsync(SqlServerProvider connection, ViewDbModel view, TimeSpan timeout, CancellationToken cancellationToken)
 		{
 			ParametersDbCollection parameters = new ParametersDbCollection();
 			string sql = @"SELECT Table_Catalog, Table_Schema, Table_Name, Column_Name
@@ -410,23 +414,23 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 				parameters.Add("@View_Schema", view.Schema);
 				parameters.Add("@View_Name", view.Name);
 				// Carga las columnas
-				using (IDataReader columnsReader = connection.ExecuteReader(sql, parameters, CommandType.Text))
+				using (DbDataReader reader = await connection.ExecuteReaderAsync(sql, parameters, CommandType.Text, timeout, cancellationToken))
 				{ 
 					// Lee los registros
-					while (columnsReader.Read())
+					while (!cancellationToken.IsCancellationRequested && await reader.ReadAsync(cancellationToken))
 					{
 						FieldDbModel column = new FieldDbModel();
 
 							// Carga los datos de la columna
-							column.Catalog = (string) columnsReader.IisNull("Table_Catalog");
-							column.Schema = (string) columnsReader.IisNull("Table_Schema");
-							column.Table = (string) columnsReader.IisNull("Table_Name");
-							column.Name = (string) columnsReader.IisNull("Column_Name");
+							column.Catalog = (string) reader.IisNull("Table_Catalog");
+							column.Schema = (string) reader.IisNull("Table_Schema");
+							column.Table = (string) reader.IisNull("Table_Name");
+							column.Name = (string) reader.IisNull("Column_Name");
 							// Añade la columna a la colección
 							view.Fields.Add(column);
 					}
 					// Cierra el recordset
-					columnsReader.Close();
+					reader.Close();
 				}
 		}
 	}

@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Bau.Libraries.LibMySqlProvider.Parser
+namespace Bau.Libraries.LibDbProviders.MySql.Parser
 {
 	/// <summary>
 	///		Parser para consultas en SQL de MySql
 	/// </summary>
-	internal class MySqlSelectParser : LibDbProviders.Base.SqlTools.SqlSelectParserBase
+	internal class MySqlSelectParser : Base.SqlTools.BaseSqlHelper
 	{
 		/// <summary>
 		///		Obtiene una cadena SQL con paginación en el servidor
@@ -20,5 +20,20 @@ namespace Bau.Libraries.LibMySqlProvider.Parser
 				// Devuelve la cadena SQL con la paginación
 				return $"{sql} LIMIT {offset} {pageSize}";
 		}
+
+		/// <summary>
+		///		Separador inicial para el nombre de campos tablas
+		/// </summary>
+		public override string SeparatorStart { get; } = "`";
+
+		/// <summary>
+		///		Separador inicial para el nombre de campos tablas
+		/// </summary>
+		public override string SeparatorEnd { get; } = "`";
+
+		/// <summary>
+		///		Prefijos de los parámetros
+		/// </summary>
+		public override string ParameterPrefix { get; } = "@";
 	}
 }

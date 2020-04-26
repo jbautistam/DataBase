@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Bau.Libraries.LibDbScripts.Parser</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Interpreters\ScriptSqlCmdParser.cs" />
+    <Compile Remove="Interpreters\SqlCommandParser.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Common\LibHelper\src\LibHelper.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -23,14 +23,14 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 		// Variables privadas
 		private string _connectionString;
 
-		public SqlServerConnectionString() : base(null, 30) { }
+		public SqlServerConnectionString() : base(string.Empty, 30) { }
 
-		public SqlServerConnectionString(string connectionString, int timeOut = 30) : base(connectionString, timeOut) { }
+		public SqlServerConnectionString(string connectionString, int timeout = 30) : base(connectionString, timeout) { }
 
-		public SqlServerConnectionString(string server, string user, string password, string dataBase, bool integratedSecurity, int timeOut = 15) 
-						: this(server, 0, user, password, dataBase, integratedSecurity, timeOut) {}
+		public SqlServerConnectionString(string server, string user, string password, string dataBase, bool integratedSecurity, int timeout = 15) 
+						: this(server, 0, user, password, dataBase, integratedSecurity, timeout) {}
 
-		public SqlServerConnectionString(string server, int port, string user, string password, string dataBase, bool integratedSecurity, int timeOut = 15) : base(null, timeOut)
+		public SqlServerConnectionString(string server, int port, string user, string password, string dataBase, bool integratedSecurity, int timeout = 15) : base(string.Empty, timeout)
 		{
 			Type = ConnectionType.Normal;
 			Server = server;
@@ -41,11 +41,38 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 			UseIntegratedSecurity = integratedSecurity;
 		}
 
-		public SqlServerConnectionString(string server, string dataBaseFile, int timeOut = 15) : base(null, timeOut)
+		public SqlServerConnectionString(string server, string dataBaseFile, int timeout = 15) : base(string.Empty, timeout)
 		{
 			Type = ConnectionType.File;
 			Server = server;
 			DataBaseFile = dataBaseFile;
+		}
+
+		public SqlServerConnectionString(System.Collections.Generic.Dictionary<string, string> parameters, int timeout = 15) : base(parameters, timeout) {}
+
+		/// <summary>
+		///		Asigna el valor de un parámetro
+		/// </summary>
+		protected override void AssignParameter(string key, string value)
+		{
+			if (IsEqual(key, nameof(Type)))
+				Type = GetEnum(value, ConnectionType.Normal);
+			else if (IsEqual(key, nameof(Server)))
+				Server = value;
+			else if (IsEqual(key, nameof(Port)))
+				Port = GetInt(value, Port);
+			else if (IsEqual(key, nameof(UseIntegratedSecurity)))
+				UseIntegratedSecurity = GetBool(value);
+			else if (IsEqual(key, nameof(User)))
+				User = value;
+			else if (IsEqual(key, nameof(Password)))
+				Password = value;
+			else if (IsEqual(key, nameof(DataBase)))
+				DataBase = value;
+			else if (IsEqual(key, nameof(DataBaseFile)))
+				DataBaseFile = value;
+			else if (IsEqual(key, nameof(ConnectionString)))
+				ConnectionString = value;
 		}
 
 		/// <summary>
@@ -97,7 +124,7 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 			{
 				string GetServerAndPort(string server, int port)
 				{
-					if (port < 1)
+					if (port < 1 || port == 1433)
 						return server;
 					else
 						return $"{server},{port}";
@@ -109,7 +136,7 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 					switch (Type)
 					{
 						case ConnectionType.File:
-							return $"Data Source={Server};AttachDbFilename=\"{DataBaseFile}\";Connect Timeout={TimeOut};User Instance=True;Integrated Security={UseIntegratedSecurity};";
+							return $"Data Source={Server};AttachDbFilename=\"{DataBaseFile}\";Connect timeout={Timeout};User Instance=True;Integrated Security={UseIntegratedSecurity};";
 						case ConnectionType.Normal:
 							string connectionString = $"Data Source={GetServerAndPort(Server, Port)};Initial Catalog={DataBase};";
 

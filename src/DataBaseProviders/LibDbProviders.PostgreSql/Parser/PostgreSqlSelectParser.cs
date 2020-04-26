@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace Bau.Libraries.LibPostgreSqlProvider.Parser
+namespace Bau.Libraries.LibDbProviders.PostgreSql.Parser
 {
 	/// <summary>
 	///		Parser para consultas en SQL de PostgreSql
 	/// </summary>
-	internal class PostgreSqlSelectParser : LibDbProviders.Base.SqlTools.SqlSelectParserBase
+	internal class PostgreSqlSelectParser : Base.SqlTools.BaseSqlHelper
 	{
 		/// <summary>
 		///		Obtiene una cadena SQL con paginación en el servidor
@@ -20,5 +20,20 @@ namespace Bau.Libraries.LibPostgreSqlProvider.Parser
 				// Devuelve la cadena SQL con la paginación
 				return $"{sql} LIMIT {pageSize} {offset}";
 		}
+
+		/// <summary>
+		///		Separador inicial para el nombre de campos tablas
+		/// </summary>
+		public override string SeparatorStart { get; } = "[";
+
+		/// <summary>
+		///		Separador inicial para el nombre de campos tablas
+		/// </summary>
+		public override string SeparatorEnd { get; } = "]";
+
+		/// <summary>
+		///		Prefijos de los parámetros
+		/// </summary>
+		public override string ParameterPrefix { get; } = "@";
 	}
 }

@@ -5,8 +5,13 @@
     <RootNamespace>Bau.Libraries.LibDbProviders.MySql</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="MySql.Data" Version="8.0.11" />
+    <PackageReference Include="MySql.Data" Version="8.0.19" />
   </ItemGroup>
 
   <ItemGroup>

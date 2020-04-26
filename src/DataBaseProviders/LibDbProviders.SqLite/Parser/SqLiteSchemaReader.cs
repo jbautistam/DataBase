@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Bau.Libraries.LibDbProviders.Base;
 using Bau.Libraries.LibDbProviders.Base.Schema;
@@ -15,44 +18,56 @@ namespace Bau.Libraries.LibDbProviders.SqLite.Parser
 		/// <summary>
 		///		Carga el esquema
 		/// </summary>
-		internal SchemaDbModel GetSchema(SqLiteProvider provider)
+		internal async Task<SchemaDbModel> GetSchemaAsync(SqLiteProvider provider, TimeSpan timeout, CancellationToken cancellationToken)
 		{
-			var schema = new SchemaDbModel();
+			SchemaDbModel schema = new SchemaDbModel();
 
-				// Abre la conexión
-				provider.Open();
-				// Carga los datos
-				foreach (string table in GetTables(provider))
-					if (!string.IsNullOrWhiteSpace(table))
-						using (IDataReader rdoData = provider.ExecuteReader($"PRAGMA table_info([{table}])", null, CommandType.Text))
-						{ 
-							while (rdoData.Read())
-								schema.Add(true, "",
-										   table,
-										   rdoData.IisNull<string>("Name"),
-										   GetFieldType(rdoData.IisNull<string>("Type")),
-										   rdoData.IisNull<string>("Type"),
-										   GetLengthFieldType(rdoData.IisNull<string>("Type")),
-										   rdoData.IisNull<long>("pk") == 1,
-										   rdoData.IisNull<long>("notnull") == 1);
-						}
-				// Cierra la conexión
-				provider.Close();
+				// Carga los datos del esquema
+				using (SqLiteProvider connection = new SqLiteProvider(provider.ConnectionString))
+				{
+					// Abre la conexión
+					await connection.OpenAsync(cancellationToken);
+					// Carga los datos
+					await LoadTablesAsync(connection, schema, timeout, cancellationToken);
+					// Cierra la conexión
+					connection.Close();
+				}
 				// Devuelve el esquema
 				return schema;
 		}
 
 		/// <summary>
+		///		Carga el esquema de las tablas
+		/// </summary>
+		private async Task LoadTablesAsync(SqLiteProvider connection, SchemaDbModel schema, TimeSpan timeout, CancellationToken cancellationToken)
+		{
+			foreach (string table in await GetTablesAsync(connection, timeout, cancellationToken))
+				if (!string.IsNullOrWhiteSpace(table))
+					using (DbDataReader rdoData = await connection.ExecuteReaderAsync($"PRAGMA table_info([{table}])", null, CommandType.Text, timeout, cancellationToken))
+					{ 
+						while (!cancellationToken.IsCancellationRequested && await rdoData.ReadAsync(cancellationToken))
+							schema.Add(true, "",
+										table,
+										rdoData.IisNull<string>("Name"),
+										GetFieldType(rdoData.IisNull<string>("Type")),
+										rdoData.IisNull<string>("Type"),
+										GetLengthFieldType(rdoData.IisNull<string>("Type")),
+										rdoData.IisNull<long>("pk") == 1,
+										rdoData.IisNull<long>("notnull") == 1);
+					}
+		}
+
+		/// <summary>
 		///		Obtiene la lista de tablas
 		/// </summary>
-		private List<string> GetTables(SqLiteProvider provider)
+		private async Task<List<string>> GetTablesAsync(SqLiteProvider provider, TimeSpan timeout, CancellationToken cancellationToken)
 		{
 			List<string> tables = new List<string>();
 
 				// Obtiene los nombres de tabla
-				using (IDataReader rdoData = provider.ExecuteReader("SELECT Name FROM sqlite_master WHERE type = 'table'", null, CommandType.Text))
+				using (DbDataReader rdoData = await provider.ExecuteReaderAsync("SELECT Name FROM sqlite_master WHERE type = 'table'", null, CommandType.Text, timeout, cancellationToken))
 				{
-					while (rdoData.Read())
+					while (!cancellationToken.IsCancellationRequested && await rdoData.ReadAsync(cancellationToken))
 						tables.Add(rdoData.IisNull<string>("name"));
 				}
 				// Devuelve la colección de tablas

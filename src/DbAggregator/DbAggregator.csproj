@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Bau.Libraries.DbAggregator</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\LibDataStructures\src\LibDataStructures.csproj" />
+    <ProjectReference Include="..\..\..\Common\LibHelper\src\LibHelper.csproj" />
+    <ProjectReference Include="..\..\..\Common\LibMarkup\src\LibMarkup.csproj" />
+    <ProjectReference Include="..\DataBaseProviders\LibDbProviders.Base\LibDbProviders.Base.csproj" />
+    <ProjectReference Include="..\DataBaseProviders\LibDbProviders.MySql\LibDbProviders.MySql.csproj" />
+    <ProjectReference Include="..\DataBaseProviders\LibDbProviders.Odbc\LibDbProviders.Odbc.csproj" />
+    <ProjectReference Include="..\DataBaseProviders\LibDbProviders.PostgreSql\LibDbProviders.PostgreSql.csproj" />
+    <ProjectReference Include="..\DataBaseProviders\LibDbProviders.Spark\LibDbProviders.Spark.csproj" />
+    <ProjectReference Include="..\DataBaseProviders\LibDbProviders.SqLite\LibDbProviders.SqLite.csproj" />
+    <ProjectReference Include="..\DataBaseProviders\LibDbProviders.SqlServer\LibDbProviders.SqlServer.csproj" />
+  </ItemGroup>
+
+</Project>

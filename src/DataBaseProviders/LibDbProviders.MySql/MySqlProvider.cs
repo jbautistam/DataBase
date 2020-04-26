@@ -3,19 +3,18 @@ using System.Data;
 
 using MySql.Data.MySqlClient;
 using Bau.Libraries.LibDbProviders.Base;
-using Bau.Libraries.LibDbProviders.Base.Providers;
 using Bau.Libraries.LibDbProviders.Base.Parameters;
 
-namespace Bau.Libraries.LibMySqlProvider
+namespace Bau.Libraries.LibDbProviders.MySql
 {
 	/// <summary>
 	///		Proveedor para MySql
 	/// </summary>
-	public class MySqlProvider : DBProviderBase
+	public class MySqlProvider : DbProviderBase
 	{
 		public MySqlProvider(IConnectionString connectionString) : base(connectionString) 
 		{ 
-			SqlParser = new Parser.MySqlSelectParser();
+			SqlHelper = new Parser.MySqlSelectParser();
 		}
 
 		/// <summary>
@@ -29,7 +28,7 @@ namespace Bau.Libraries.LibMySqlProvider
 		/// <summary>
 		///		Obtiene un comando
 		/// </summary>
-		protected override IDbCommand GetCommand(string text)
+		protected override IDbCommand GetCommand(string text, TimeSpan? timeout = null)
 		{
 			return new MySqlCommand(text, Connection as MySqlConnection, Transaction as MySqlTransaction);
 		}
@@ -37,7 +36,7 @@ namespace Bau.Libraries.LibMySqlProvider
 		/// <summary>
 		///		Convierte un parámetro
 		/// </summary>
-		protected override IDataParameter ConvertParameter(ParameterDB parameter)
+		protected override IDataParameter ConvertParameter(ParameterDb parameter)
 		{
 			// Convierte el parámetro
 			if (parameter.Direction == ParameterDirection.ReturnValue)
@@ -67,9 +66,14 @@ namespace Bau.Libraries.LibMySqlProvider
 		/// <summary>
 		///		Obtiene el esquema
 		/// </summary>
-		public override LibDBProvidersBase.Schema.SchemaDbModel GetSchema()
+		public async override System.Threading.Tasks.Task<Base.Schema.SchemaDbModel> GetSchemaAsync(TimeSpan timeout, System.Threading.CancellationToken cancellationToken)
 		{
-			return new Parser.MySqlSchemaReader().GetSchema(this);
+			return await new Parser.MySqlSchemaReader().GetSchemaAsync(this, timeout, cancellationToken);
 		}
+
+		/// <summary>
+		///		Implementación del sistema de tratamiento de cadenas SQL
+		/// </summary>
+		public override Base.SqlTools.ISqlHelper SqlHelper { get; }
 	}
 }

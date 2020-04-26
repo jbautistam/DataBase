@@ -8,6 +8,11 @@ namespace Bau.Libraries.LibDbProviders.Base
 	public interface IConnectionString
 	{
 		/// <summary>
+		///		Asigna los parámetros de la cadena de conexión a partir de un diccionario
+		/// </summary>
+		void AssignParameters(System.Collections.Generic.Dictionary<string, string> parameters);
+
+		/// <summary>
 		///		Compone la cadena de conexión a partir de los parámetros
 		/// </summary>
 		string ConnectionString { get; set; }
@@ -15,6 +20,6 @@ namespace Bau.Libraries.LibDbProviders.Base
 		/// <summary>
 		///		Tiempo de espera
 		/// </summary>
-		int TimeOut { get; set; }
+		int Timeout { get; set; }
 	}
 }

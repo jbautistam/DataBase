@@ -15,7 +15,7 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 	{
 		public SqlServerProvider(IConnectionString connectionString) : base(connectionString) 
 		{ 
-			SqlParser = new	SqlServerSelectParser(this);
+			SqlHelper = new	SqlServerSelectParser(this);
 		}
 
 		/// <summary>
@@ -29,9 +29,15 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 		/// <summary>
 		///		Obtiene un comando
 		/// </summary>
-		protected override IDbCommand GetCommand(string text)
+		protected override IDbCommand GetCommand(string text, TimeSpan? timeout = null)
 		{
-			return new SqlCommand(text, Connection as SqlConnection, Transaction as SqlTransaction);
+			SqlCommand command = new SqlCommand(text, Connection as SqlConnection, Transaction as SqlTransaction);
+
+				// Asigna el tiempo de espera al comando
+				if (timeout != null)
+					command.CommandTimeout = (int) (timeout ?? TimeSpan.FromMinutes(1)).TotalSeconds;
+				// Devuelve el comando
+				return command;
 		}
 
 		/// <summary>
@@ -41,7 +47,7 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 		{
 			if (parameter.Direction == ParameterDirection.ReturnValue)
 				return new SqlParameter(parameter.Name, SqlDbType.Int);
-			if (parameter.Value == null)
+			if (parameter.Value == null || parameter.Value is DBNull)
 				return new SqlParameter(parameter.Name, null);
 			if (parameter.IsText)
 				return new SqlParameter(parameter.Name, SqlDbType.Text);
@@ -49,6 +55,8 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 				return new SqlParameter(parameter.Name, SqlDbType.Bit);
 			if (parameter.Value is int?)
 				return new SqlParameter(parameter.Name, SqlDbType.Int);
+			if (parameter.Value is long?)
+				return new SqlParameter(parameter.Name, DbType.Int64);
 			if (parameter.Value is double?)
 				return new SqlParameter(parameter.Name, SqlDbType.Float);
 			if (parameter.Value is string)
@@ -63,19 +71,46 @@ namespace Bau.Libraries.LibDbProviders.SqlServer
 		}
 
 		/// <summary>
-		///		Cambia el timeout de la conexión (tiene que estar cerrada)
+		///		Copia masiva de un <see cref="IDataReader"/> sobre una tabla
 		/// </summary>
-		public void SetTimeOut(int timeOutSeconds)
+		public override long BulkCopy(IDataReader reader, string table, System.Collections.Generic.Dictionary<string, string> mappings, 
+									  int recordsPerBlock = 50_000, TimeSpan? timeout = null)
 		{
-			ConnectionString = new SqlServerConnectionString(ConnectionString.ConnectionString, timeOutSeconds);
+			long records = 0;
+
+				// Copia los datos
+				using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection as SqlConnection))
+				{
+					// Asigna el manejador de eventos que obtiene el número de registros
+					bulkCopy.NotifyAfter = 1;
+					bulkCopy.SqlRowsCopied += (sender, args) => records = args.RowsCopied;
+					// Asigna las propiedades
+					bulkCopy.BulkCopyTimeout = (int) (timeout ?? TimeSpan.FromMinutes(5)).TotalSeconds;
+					bulkCopy.BatchSize = recordsPerBlock;
+					bulkCopy.DestinationTableName = table;
+					bulkCopy.EnableStreaming = true;
+					// Asigna los mapeos
+					if (mappings != null)
+						foreach (System.Collections.Generic.KeyValuePair<string, string> mapping in mappings)
+							bulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(mapping.Key, mapping.Value));
+					// Escribe los datos en el servidor
+					bulkCopy.WriteToServer(reader);
+				}
+				// Devuelve el número de registros copiados
+				return records;
 		}
 
 		/// <summary>
 		///		Obtiene el esquema
 		/// </summary>
-		public override SchemaDbModel GetSchema()
+		public async override System.Threading.Tasks.Task<SchemaDbModel> GetSchemaAsync(TimeSpan timeout, System.Threading.CancellationToken cancellationToken)
 		{
-			return new SqlServerSchemaReader().GetSchema(this);
+			return await new SqlServerSchemaReader().GetSchemaAsync(this, timeout, cancellationToken);
 		}
+
+		/// <summary>
+		///		Implementación del sistema de tratamiento de cadenas SQL
+		/// </summary>
+		public override Base.SqlTools.ISqlHelper SqlHelper { get; }
 	}
 }

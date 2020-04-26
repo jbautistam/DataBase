@@ -3,15 +3,15 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Bau.Libraries.LibDbProviders.Odbc</RootNamespace>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageId>Bau.Libraries.LibDbProviders.Odbc</PackageId>
-    <Authors>Jose Antonio Bautista Montejo</Authors>
-    <Description>Proveedor de base de datos para ODBC</Description>
-    <PackageProjectUrl>https://github.com/jbautistam/DataBase</PackageProjectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Data.Odbc" Version="4.5.0" />
+    <PackageReference Include="System.Data.Odbc" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>

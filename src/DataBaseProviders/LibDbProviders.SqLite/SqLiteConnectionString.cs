@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Globalization;
 using Bau.Libraries.LibDbProviders.Base;
 
 namespace Bau.Libraries.LibDbProviders.SqLite
@@ -29,11 +29,13 @@ namespace Bau.Libraries.LibDbProviders.SqLite
 		// Variables privadas
 		private string _connectionString;
 
-		public SqLiteConnectionString() : base(null, 30) { }
+		public SqLiteConnectionString() : base(string.Empty, 30) { }
 
-		public SqLiteConnectionString(string connectionString, int timeOut = 15) : base(connectionString, timeOut) {}
+		public SqLiteConnectionString(string connectionString, int timeout = 15) : base(connectionString, timeout) {}
 
-		public SqLiteConnectionString(string fileName, string password, OpenMode mode = OpenMode.ReadWriteCreate, int timeOut = 15) : base(null, timeOut)
+		public SqLiteConnectionString(System.Collections.Generic.Dictionary<string, string> parameters, int timeout = 15) : base(parameters, timeout) {}
+
+		public SqLiteConnectionString(string fileName, string password, OpenMode mode = OpenMode.ReadWriteCreate, int timeout = 15) : base(string.Empty, timeout)
 		{
 			FileName = fileName;
 			Password = password;
@@ -41,19 +43,32 @@ namespace Bau.Libraries.LibDbProviders.SqLite
 		}
 
 		/// <summary>
+		///		Asigna el valor de un parámetro
+		/// </summary>
+		protected override void AssignParameter(string key, string value)
+		{
+			if (IsEqual(key, nameof(Mode)))
+				Mode = GetEnum(value, OpenMode.ReadWriteCreate);
+			else if (IsEqual(key, nameof(FileName)))
+				FileName = value;
+			else if (IsEqual(key, nameof(Password)))
+				Password = value;
+		}
+
+		/// <summary>
 		///		Nombre de archivo
 		/// </summary>
-		public string FileName { get; }
+		public string FileName { get; private set; }
 
 		/// <summary>
 		///		Contraseña
 		/// </summary>
-		public string Password { get; }
+		public string Password { get; private set; }
 
 		/// <summary>
 		///		Modo de conexión
 		/// </summary>
-		public OpenMode Mode { get; }
+		public OpenMode Mode { get; private set; }
 
 		/// <summary>
 		///		Cadena de conexión

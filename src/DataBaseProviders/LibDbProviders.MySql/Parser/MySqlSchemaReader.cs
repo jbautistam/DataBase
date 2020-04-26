@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Bau.Libraries.LibDbProviders.Base;
 using Bau.Libraries.LibDbProviders.Base.Schema;
 
-namespace Bau.Libraries.LibMySqlProvider.Parser
+namespace Bau.Libraries.LibDbProviders.MySql.Parser
 {
 	/// <summary>
 	///		Clase de lectura de esquemas para MySql
@@ -14,31 +17,36 @@ namespace Bau.Libraries.LibMySqlProvider.Parser
 		/// <summary>
 		///		Obtiene el esquema
 		/// </summary>
-		internal SchemaDbModel GetSchema(MySqlProvider provider)
+		internal async Task<SchemaDbModel> GetSchemaAsync(MySqlProvider provider, TimeSpan timeout, CancellationToken cancellationToken)
 		{
-			var schema = new SchemaDbModel();
+			SchemaDbModel schema = new SchemaDbModel();
 
-				// Abre la conexión
-				provider.Open();
-				// Carga los datos 
-				//? Obtiene el DataTable y crea un IDataReader a partir de él porque cuando se llama a provider.ExecuteReader da un error de 
-				//? "Invalid attempt to Read when reader is closed"
-				using (IDataReader rdoData = provider.GetDataTable(GetSqlReadSchema(GetDataBase(provider.ConnectionString.ConnectionString)), 
-																   null, CommandType.Text).CreateDataReader())
+				// Carga los datos del esquema
+				using (MySqlProvider connection = new MySqlProvider(provider.ConnectionString))
 				{
-					while (rdoData.Read())
-						schema.Add(rdoData.IisNull<string>("TableType").Equals("TABLE", StringComparison.CurrentCultureIgnoreCase),
-								   rdoData.IisNull<string>("SchemaName"),
-								   rdoData.IisNull<string>("TableName"),
-								   rdoData.IisNull<string>("ColumnName"),
-								   GetFieldType(rdoData.IisNull<string>("ColumnType")),
-								   rdoData.IisNull<string>("ColumnType"),
-								   ConvertToInt(rdoData.IisNull<string>("ColumnLength")),
-								   rdoData.IisNull<long>("PrimaryKey") == 1,
-								   rdoData.IisNull<long>("IsRequired") == 1);
+					// Abre la conexión
+					await connection.OpenAsync(cancellationToken);
+					// Carga los datos 
+					//? Obtiene el DataTable y crea un IDataReader a partir de él porque cuando se llama a provider.ExecuteReader da un error de 
+					//? "Invalid attempt to Read when reader is closed"
+					using (DbDataReader rdoData = (await connection.GetDataTableAsync(GetSqlReadSchema(GetDataBase(provider.ConnectionString.ConnectionString)), 
+																				      null, CommandType.Text))
+															.CreateDataReader())
+					{
+						while (!cancellationToken.IsCancellationRequested && await rdoData.ReadAsync(cancellationToken))
+							schema.Add(rdoData.IisNull<string>("TableType").Equals("TABLE", StringComparison.CurrentCultureIgnoreCase),
+									   rdoData.IisNull<string>("SchemaName"),
+									   rdoData.IisNull<string>("TableName"),
+									   rdoData.IisNull<string>("ColumnName"),
+									   GetFieldType(rdoData.IisNull<string>("ColumnType")),
+									   rdoData.IisNull<string>("ColumnType"),
+									   ConvertToInt(rdoData.IisNull<string>("ColumnLength")),
+									   rdoData.IisNull<long>("PrimaryKey") == 1,
+									   rdoData.IisNull<long>("IsRequired") == 1);
+					}
+					// Cierra la conexión
+					connection.Close();
 				}
-				// Cierra la conexión
-				provider.Close();
 				// Devuelve el esquema
 				return schema;
 		}

@@ -16,66 +16,17 @@ namespace Bau.Libraries.LibDbProviders.Base.SqlTools
 		}
 
 		/// <summary>
-		///		Obtiene la cadena SQL necesaria para paginar
-		/// </summary>
-		public abstract string GetSqlPagination(string sql, int pageNumber, int pageSize);
-
-		/// <summary>
-		///		Obtiene el límite inferior para la paginación
-		/// </summary>
-		protected int GetUpperLimit(int pageNumber, int pageSize)
-		{
-			return (pageNumber + 1) * pageSize;
-		}
-
-		/// <summary>
-		///		Obtiene el límite superior para la paginación
-		/// </summary>
-		protected int GetLowerLimit(int pageNumber, int pageSize)
-		{
-			return pageSize * pageNumber + 1;
-		}
-
-		/// <summary>
 		///		Elimina la sección ORDER BY de la consulta
 		/// </summary>
 		protected string GetSqlWithoutOrderBy(string sql)
 		{
-			return Cut(sql, "ORDER BY", out string last).Trim();
+			return Cut(sql, "ORDER BY", out _).Trim();
 		}
 
 		/// <summary>
-		///		Indica si en la cadena SQL se incluye un Distinct
+		///		Obtiene la cadena SQL necesaria para paginar
 		/// </summary>
-		protected bool HasDistinctClause(string sql)
-		{
-			return sql.StartsWith("SELECT DISTINCT", StringComparison.CurrentCultureIgnoreCase);
-		}
-
-		/// <summary>
-		///		Obtiene el alias de un campo
-		/// </summary>
-		protected string GetAlias(string field)
-		{
-			if (string.IsNullOrWhiteSpace(field))
-				return field;
-			else
-			{
-				int indexStartAs = field.IndexOf(" AS ", StringComparison.InvariantCultureIgnoreCase);
-
-					if (indexStartAs < 0)
-						return field;
-					else
-					{
-						int indexEndAs = indexStartAs + " AS ".Length;
-
-							if (indexEndAs < field.Length)
-								return field.Substring(indexEndAs);
-							else
-								return field;
-					}
-			}
-		}
+		public abstract string GetSqlPagination(string sql, int pageNumber, int pageSize);
 
 		/// <summary>
 		///		Elimina caracteres no deseados de una cadena SQL (saltos de línea, espacios dobles, tabuladores)

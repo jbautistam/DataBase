@@ -12,11 +12,7 @@ namespace Bau.Libraries.LibDbProviders.Base.Parameters
 		public ParameterDb(string name, object value, System.Data.ParameterDirection direction, int length = 0)
 		{ 
 			if (!string.IsNullOrEmpty(name))
-			{ 
 				Name = name.Trim();
-				if (!string.IsNullOrEmpty(Name) && !Name.StartsWith("@"))
-					Name = "@" + Name;
-			}
 			if (value is Enum)
 				Value = (int) value;
 			else

@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Bau.Libraries.LibDbProviders.Base;
 using Bau.Libraries.LibDbProviders.Base.Schema;
 
-namespace Bau.Libraries.LibPostgreSqlProvider.Parser
+namespace Bau.Libraries.LibDbProviders.PostgreSql.Parser
 {
 	/// <summary>
 	///		Clase para lectura del esquema en una conexión postgress
@@ -14,28 +17,32 @@ namespace Bau.Libraries.LibPostgreSqlProvider.Parser
 		/// <summary>
 		///		Obtiene el esquema
 		/// </summary>
-		internal SchemaDbModel GetSchema(PostgreSqlProvider provider)
+		internal async Task<SchemaDbModel> GetSchemaAsync(PostgreSqlProvider provider, TimeSpan timeout, CancellationToken cancellationToken)
 		{
-			var schema = new SchemaDbModel();
+			SchemaDbModel schema = new SchemaDbModel();
 
-				// Abre la conexión
-				provider.Open();
-				// Carga los datos
-				using (IDataReader rdoData = provider.ExecuteReader(GetSqlReadSchema(), null, CommandType.Text))
-				{ 
-					while (rdoData.Read())
-						schema.Add(rdoData.IisNull<string>("TableType").Equals("TABLE", StringComparison.CurrentCultureIgnoreCase),
-								   rdoData.IisNull<string>("SchemaName"),
-								   rdoData.IisNull<string>("TableName"),
-								   rdoData.IisNull<string>("ColumnName"),
-								   GetFieldType(rdoData.IisNull<string>("ColumnType")),
-								   rdoData.IisNull<string>("ColumnType"),
-								   rdoData.IisNull<int>("ColumnLength", 0),
-								   rdoData.IisNull<int>("PrimaryKey") == 1,
-								   rdoData.IisNull<int>("IsRequired") == 1);
+				// Carga el esquema
+				using (PostgreSqlProvider connection = new PostgreSqlProvider(provider.ConnectionString))
+				{
+					// Abre la conexión
+					await connection.OpenAsync(cancellationToken);
+					// Carga los datos
+					using (DbDataReader rdoData = await connection.ExecuteReaderAsync(GetSqlReadSchema(), null, CommandType.Text, timeout, cancellationToken))
+					{ 
+						while (!cancellationToken.IsCancellationRequested && await rdoData.ReadAsync(cancellationToken))
+							schema.Add(rdoData.IisNull<string>("TableType").Equals("TABLE", StringComparison.CurrentCultureIgnoreCase),
+									   rdoData.IisNull<string>("SchemaName"),
+									   rdoData.IisNull<string>("TableName"),
+									   rdoData.IisNull<string>("ColumnName"),
+									   GetFieldType(rdoData.IisNull<string>("ColumnType")),
+									   rdoData.IisNull<string>("ColumnType"),
+									   rdoData.IisNull<int>("ColumnLength", 0),
+									   rdoData.IisNull<int>("PrimaryKey") == 1,
+									   rdoData.IisNull<int>("IsRequired") == 1);
+					}
+					// Cierra la conexión
+					connection.Close();
 				}
-				// Cierra la conexión
-				provider.Close();
 				// Devuelve el esquema
 				return schema;
 		}

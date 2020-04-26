@@ -14,7 +14,7 @@ namespace Bau.Libraries.LibDbProviders.SqLite
 	{
 		public SqLiteProvider(IConnectionString connectionString) : base(connectionString) 
 		{ 
-			SqlParser = new Parser.SqLiteSelectParser();
+			SqlHelper = new Parser.SqLiteSelectParser();
 		}
 
 		/// <summary>
@@ -28,9 +28,15 @@ namespace Bau.Libraries.LibDbProviders.SqLite
 		/// <summary>
 		///		Obtiene un comando
 		/// </summary>
-		protected override IDbCommand GetCommand(string text)
+		protected override IDbCommand GetCommand(string text, TimeSpan? timeout = null)
 		{
-			return new SQLiteCommand(text, Connection as SQLiteConnection, Transaction as SQLiteTransaction);
+			SQLiteCommand command = new SQLiteCommand(text, Connection as SQLiteConnection, Transaction as SQLiteTransaction);
+
+				// Asigna el tiempo de espera si es necarios
+				if (timeout != null)
+					command.CommandTimeout  = (int) (timeout ?? TimeSpan.FromMinutes(1)).TotalSeconds;
+				// Devuelve el comando
+				return command;
 		}
 
 		/// <summary>
@@ -41,23 +47,29 @@ namespace Bau.Libraries.LibDbProviders.SqLite
 			// Convierte el parámetro
 			if (parameter.Direction == ParameterDirection.ReturnValue)
 				return new SQLiteParameter(parameter.Name, DbType.Int32);
-			if (parameter.Value == null)
+			else if (parameter.Value == null || parameter.Value is DBNull)
 				return new SQLiteParameter(parameter.Name, null);
-			if (parameter.IsText)
+			else if (parameter.IsText)
 				return new SQLiteParameter(parameter.Name, DbType.String);
-			if (parameter.Value is bool?)
+			else if (parameter.Value is bool?)
 				return new SQLiteParameter(parameter.Name, DbType.Int64);
-			if (parameter.Value is int?)
+			else if (parameter.Value is int?)
 				return new SQLiteParameter(parameter.Name, DbType.Int64);
-			if (parameter.Value is double?)
+			else if (parameter.Value is long?)
+				return new SQLiteParameter(parameter.Name, DbType.Int64);
+			else if (parameter.Value is double?)
 				return new SQLiteParameter(parameter.Name, DbType.Double);
-			if (parameter.Value is string)
+			else if (parameter.Value is float?)
+				return new SQLiteParameter(parameter.Name, DbType.Double);
+			else if (parameter.Value is decimal?)
+				return new SQLiteParameter(parameter.Name, DbType.Double);
+			else if (parameter.Value is string)
 				return new SQLiteParameter(parameter.Name, DbType.String, parameter.Length);
-			if (parameter.Value is byte[])
+			else if (parameter.Value is byte[])
 				return new SQLiteParameter(parameter.Name, DbType.Binary);
-			if (parameter.Value is DateTime?)
+			else if (parameter.Value is DateTime?)
 				return new SQLiteParameter(parameter.Name, DbType.DateTime);
-			if (parameter.Value is Enum)
+			else if (parameter.Value is Enum)
 				return new SQLiteParameter(parameter.Name, DbType.Int64);
 			// Si ha llegado hasta aquí, lanza una excepción
 			throw new NotSupportedException($"Tipo del parámetro {parameter.Name} desconocido");
@@ -66,9 +78,14 @@ namespace Bau.Libraries.LibDbProviders.SqLite
 		/// <summary>
 		///		Obtiene el esquema
 		/// </summary>
-		public override Base.Schema.SchemaDbModel GetSchema()
+		public async override System.Threading.Tasks.Task<Base.Schema.SchemaDbModel> GetSchemaAsync(TimeSpan timeout, System.Threading.CancellationToken cancellationToken)
 		{
-			return new Parser.SqLiteSchemaReader().GetSchema(this);
+			return await new Parser.SqLiteSchemaReader().GetSchemaAsync(this, timeout, cancellationToken);
 		}
+
+		/// <summary>
+		///		Implementación del sistema de tratamiento de cadenas SQL
+		/// </summary>
+		public override Base.SqlTools.ISqlHelper SqlHelper { get; }
 	}
 }

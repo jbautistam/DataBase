@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Bau.Libraries.LibDbScript.Manager</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Common\LibHelper\src\LibHelper.csproj" />
+    <ProjectReference Include="..\..\..\..\Common\LibMarkup\src\LibMarkup.csproj" />
+    <ProjectReference Include="..\..\..\..\Compilers\src\LibCompiler\Compiler.LibInterpreter\Compiler.LibInterpreter.csproj" />
+    <ProjectReference Include="..\..\..\..\Compilers\src\LibCompiler\Compiler.LibTokenizer\Compiler.LibTokenizer.csproj" />
+    <ProjectReference Include="..\..\Aggregator.Providers\Aggregator.Providers.Base\Aggregator.Providers.Base.csproj" />
+    <ProjectReference Include="..\..\Aggregator.Providers\Aggregator.Providers.Manager\Aggregator.Providers.Manager.csproj" />
+  </ItemGroup>
+
+</Project>

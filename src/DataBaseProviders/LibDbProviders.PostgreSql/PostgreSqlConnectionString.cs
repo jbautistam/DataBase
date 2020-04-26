@@ -1,30 +1,53 @@
 ﻿using System;
 
-using Bau.Libraries.LibDbProviders.Base.Providers;
+using Bau.Libraries.LibDbProviders.Base;
 
-namespace Bau.Libraries.LibPostgreSqlProvider
+namespace Bau.Libraries.LibDbProviders.PostgreSql
 {
 	/// <summary>
 	///		Cadena de conexión de PostgreSql
 	/// </summary>
-	public class PostgreSqlConnectionString : DBConnectionStringBase
+	public class PostgreSqlConnectionString : DbConnectionStringBase
 	{ 
 		// Variables privadas
 		private string connectionString;
 
-		public PostgreSqlConnectionString() : base(null, 30) { }
+		public PostgreSqlConnectionString() : base(string.Empty, 30) { }
 
 		public PostgreSqlConnectionString(string connectionString) : base(connectionString, 30) {}
 
+		public PostgreSqlConnectionString(System.Collections.Generic.Dictionary<string, string> parameters, int timeout = 15) : base(parameters, timeout) {}
+
 		public PostgreSqlConnectionString(string server, string dataBase, int port, bool integratedSecurity, 
-										  string user, string password = null, int timeOut = 15) : base(null, timeOut)
+										  string user, string password = null, int timeout = 15) : base(string.Empty, timeout)
 		{
 			Server = server;
 			DataBase = dataBase;
 			Port = port;
-			IntegratedSecurity = integratedSecurity;
+			UseIntegratedSecurity = integratedSecurity;
 			User = user;
 			Password = password;
+		}
+
+		/// <summary>
+		///		Asigna el valor de un parámetro
+		/// </summary>
+		protected override void AssignParameter(string key, string value)
+		{
+			if (IsEqual(key, nameof(Server)))
+				Server = value;
+			else if (IsEqual(key, nameof(DataBase)))
+				DataBase = value;
+			else if (IsEqual(key, nameof(Port)))
+				Port = GetInt(value, Port);
+			else if (IsEqual(key, nameof(UseIntegratedSecurity)))
+				UseIntegratedSecurity = GetBool(value);
+			else if (IsEqual(key, nameof(User)))
+				User = value;
+			else if (IsEqual(key, nameof(Password)))
+				Password = value;
+			else if (IsEqual(key, nameof(ConnectionString)))
+				ConnectionString = value;
 		}
 
 		/// <summary>
@@ -45,7 +68,7 @@ namespace Bau.Libraries.LibPostgreSqlProvider
 		/// <summary>
 		///		Indica si se debe utilizar seguridad integrada
 		/// </summary>
-		public bool IntegratedSecurity { get; set; }
+		public bool UseIntegratedSecurity { get; set; }
 
 		/// <summary>
 		///		Usuario
@@ -78,7 +101,7 @@ namespace Bau.Libraries.LibPostgreSqlProvider
 						if (Port > 0)
 							connection += $"port={Port};";
 						// Añade las opciones de seguridad
-						if (IntegratedSecurity)
+						if (UseIntegratedSecurity)
 							connection += "Integrated Security=true;";
 						else
 						{

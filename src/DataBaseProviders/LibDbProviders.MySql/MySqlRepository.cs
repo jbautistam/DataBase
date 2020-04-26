@@ -3,7 +3,7 @@
 using Bau.Libraries.LibDbProviders.Base.RepositoryData;
 using Bau.Libraries.LibDbProviders.Base.Parameters;
 
-namespace Bau.Libraries.LibMySqlProvider
+namespace Bau.Libraries.LibDbProviders.MySql
 {
 	/// <summary>
 	///		Clase para ayuda de repository de MySql
@@ -17,7 +17,7 @@ namespace Bau.Libraries.LibMySqlProvider
 		/// <summary>
 		///		Devuelve el valor identidad
 		/// </summary>
-		protected override int? GetIdentityValue(ParametersDBCollection parametersDB)
+		protected override int? GetIdentityValue(ParametersDbCollection parametersDB)
 		{ 
 			return (int?) parametersDB["@return_code"].Value;
 		}

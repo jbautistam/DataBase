@@ -101,6 +101,12 @@ namespace Bau.Libraries.LibDbProviders.Base
 										  TimeSpan? timeout = null, CancellationToken? cancellationToken = null);
 
 		/// <summary>
+		///		Obtiene un datatable con el plan de ejcución de una sentencia
+		/// </summary>
+		Task<DataTable> GetExecutionPlanAsync(string sql, ParametersDbCollection parameters, CommandType commandType, 
+											  TimeSpan? timeout = null, CancellationToken? cancellationToken = null);
+
+		/// <summary>
 		///		Obtiene el número de registros resultantes de una consulta SQL
 		/// </summary>
 		long? GetRecordsCount(string sql, ParametersDbCollection parametersDB, TimeSpan? timeout = null);

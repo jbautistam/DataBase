@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
 
 using NpgsqlTypes;
 using Npgsql;
@@ -67,9 +69,18 @@ namespace Bau.Libraries.LibDbProviders.PostgreSql
 		/// <summary>
 		///		Obtiene el esquema
 		/// </summary>
-		public async override System.Threading.Tasks.Task<Base.Schema.SchemaDbModel> GetSchemaAsync(TimeSpan timeout, System.Threading.CancellationToken cancellationToken)
+		public async override Task<Base.Schema.SchemaDbModel> GetSchemaAsync(TimeSpan timeout, CancellationToken cancellationToken)
 		{
 			return await new Parser.PostgreSqlSchemaReader().GetSchemaAsync(this, timeout, cancellationToken);
+		}
+
+		/// <summary>
+		///		Obtiene un datatable con el plan de ejcución de una sentencia
+		/// </summary>
+		public async override Task<DataTable> GetExecutionPlanAsync(string sql, ParametersDbCollection parameters, CommandType commandType, 
+																	TimeSpan? timeout = null, CancellationToken? cancellationToken = null)
+		{
+			return await GetDataTableAsync($"BEGIN; EXPLAIN ANALYZE VERBOSE {sql}; ROLLBACK;", parameters, commandType, timeout, cancellationToken);
 		}
 
 		/// <summary>

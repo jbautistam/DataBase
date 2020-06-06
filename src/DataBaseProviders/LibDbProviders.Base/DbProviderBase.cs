@@ -269,6 +269,12 @@ namespace Bau.Libraries.LibDbProviders.Base
 		}
 
 		/// <summary>
+		///		Obtiene un datatable con el plan de ejcución de una sentencia
+		/// </summary>
+		public abstract Task<DataTable> GetExecutionPlanAsync(string sql, ParametersDbCollection parameters, CommandType commandType, 
+															  TimeSpan? timeout = null, CancellationToken? cancellationToken = null);
+
+		/// <summary>
 		///		Obtiene un IDataReader a partir de un nombre de una sentencia o procedimiento y sus parámetros paginando
 		///	en el servidor
 		/// </summary>

@@ -70,6 +70,16 @@ namespace Bau.Libraries.LibDbProviders.ODBC
 		}
 
 		/// <summary>
+		///		Obtiene un datatable con el plan de ejcución de una sentencia
+		/// </summary>
+		public async override Task<DataTable> GetExecutionPlanAsync(string sql, ParametersDbCollection parameters, CommandType commandType, 
+																	TimeSpan? timeout = null, CancellationToken? cancellationToken = null)
+		{
+			await Task.Delay(1);
+			return new DataTable();
+		}
+
+		/// <summary>
 		///		Implementación del sistema de tratamiento de cadenas SQL
 		/// </summary>
 		public override Base.SqlTools.ISqlHelper SqlHelper { get; }

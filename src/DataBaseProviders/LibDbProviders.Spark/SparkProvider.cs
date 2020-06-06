@@ -78,7 +78,7 @@ namespace Bau.Libraries.LibDbProviders.Spark
 		public async override Task<DataTable> GetExecutionPlanAsync(string sql, ParametersDbCollection parameters, CommandType commandType, 
 																	TimeSpan? timeout = null, CancellationToken? cancellationToken = null)
 		{
-			return await GetDataTableAsync($"EXPLAIN  {sql}", parameters, commandType, timeout, cancellationToken);
+			return await GetDataTableAsync($"EXPLAIN EXTENDED {sql}", parameters, commandType, timeout, cancellationToken);
 		}
 
 		/// <summary>

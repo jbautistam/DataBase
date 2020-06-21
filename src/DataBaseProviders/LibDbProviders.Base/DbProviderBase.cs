@@ -57,6 +57,22 @@ namespace Bau.Libraries.LibDbProviders.Base
 		protected abstract IDbConnection GetInstance();
 
 		/// <summary>
+		///		Ejecuta una sentencia o procedimiento sobre la base de datos y devuelve un escalar de forma asíncrona
+		/// </summary>
+		private IDbCommand PrepareCommand(string sql, ParametersDbCollection parameters, CommandType commandType, TimeSpan? timeout = null)
+		{
+			IDbCommand command = GetCommand(sql, timeout);
+
+				// Indica el tipo de comando
+				command.CommandType = commandType;
+				command.CommandTimeout = GetTimeout(timeout);
+				// Añade los parámetros al comando
+				AddParameters(command, parameters);
+				// Devuelve el comando
+				return command;
+		}
+
+		/// <summary>
 		///		Obtiene un comando
 		/// </summary>
 		protected abstract IDbCommand GetCommand(string sql, TimeSpan? timeout);
@@ -78,13 +94,8 @@ namespace Bau.Libraries.LibDbProviders.Base
 			int rows;
 
 				// Ejecuta la consulta
-				using (IDbCommand command = GetCommand(sql, timeout))
+				using (IDbCommand command = PrepareCommand(sql, parameters, commandType, timeout))
 				{ 
-					// Indica el tipo del comando
-					command.CommandType = commandType;
-					command.CommandTimeout = GetTimeout(timeout);
-					// Añade los parámetros al comando
-					AddParameters(command, parameters);
 					// Ejecuta la consulta
 					rows = command.ExecuteNonQuery();
 					// Pasa los valores de salida de los parámetros del comando a la colección de parámetros de entrada
@@ -107,13 +118,8 @@ namespace Bau.Libraries.LibDbProviders.Base
 			int rows;
 
 				// Ejecuta la consulta
-				using (IDbCommand command = GetCommand(sql, timeout))
+				using (IDbCommand command = PrepareCommand(sql, parameters, commandType, timeout))
 				{ 
-					// Indica el tipo del comando
-					command.CommandType = commandType;
-					command.CommandTimeout = GetTimeout(timeout);
-					// Añade los parámetros al comando
-					AddParameters(command, parameters);
 					// Ejecuta la consulta
 					rows = await (command as DbCommand).ExecuteNonQueryAsync(cancellationToken ?? CancellationToken.None);
 					// Pasa los valores de salida de los parámetros del comando a la colección de parámetros de entrada
@@ -132,44 +138,16 @@ namespace Bau.Libraries.LibDbProviders.Base
 		/// </summary>
 		public IDataReader ExecuteReader(string sql, ParametersDbCollection parametersDB, CommandType commandType, TimeSpan? timeout = null)
 		{
-			IDataReader reader;
-
-				// Ejecuta el comando
-				using (IDbCommand command = GetCommand(sql, timeout))
-				{ 
-					// Indica el tipo de comando
-					command.CommandType = commandType;
-					command.CommandTimeout = GetTimeout(timeout);
-					// Añade los parámetros
-					AddParameters(command, parametersDB);
-					// Obtiene el dataReader
-					reader = command.ExecuteReader();
-				}
-				// Devuelve el dataReader
-				return reader;
+			return PrepareCommand(sql, parametersDB, commandType, timeout).ExecuteReader();
 		}
 
 		/// <summary>
 		///		Obtiene un DataReader de forma asíncrona
 		/// </summary>
 		public async Task<DbDataReader> ExecuteReaderAsync(string sql, ParametersDbCollection parametersDB, CommandType commandType, 
-														  TimeSpan? timeout = null, CancellationToken? cancellationToken = null)
+														   TimeSpan? timeout = null, CancellationToken? cancellationToken = null)
 		{
-			DbDataReader reader;
-
-				// Ejecuta el comando
-				using (IDbCommand command = GetCommand(sql, timeout))
-				{ 
-					// Indica el tipo de comando
-					command.CommandType = commandType;
-					command.CommandTimeout = GetTimeout(timeout);
-					// Añade los parámetros
-					AddParameters(command, parametersDB);
-					// Obtiene el dataReader
-					reader = await (command as DbCommand).ExecuteReaderAsync(cancellationToken ?? CancellationToken.None);
-				}
-				// Devuelve el dataReader
-				return reader;
+			return await (PrepareCommand(sql, parametersDB, commandType, timeout) as DbCommand).ExecuteReaderAsync(cancellationToken ?? CancellationToken.None);
 		}
 
 		/// <summary>
@@ -177,21 +155,7 @@ namespace Bau.Libraries.LibDbProviders.Base
 		/// </summary>
 		public object ExecuteScalar(string sql, ParametersDbCollection parameters, CommandType commandType, TimeSpan? timeout = null)
 		{
-			object result;
-
-				// Ejecuta el comando
-				using (IDbCommand command = GetCommand(sql, timeout))
-				{ 
-					// Indica el tipo de comando
-					command.CommandType = commandType;
-					command.CommandTimeout = GetTimeout(timeout);
-					// Añade los parámetros al comando
-					AddParameters(command, parameters);
-					// Ejecuta la consulta
-					result = command.ExecuteScalar();
-				}
-				// Devuelve el resultado
-				return result;
+			return PrepareCommand(sql, parameters, commandType, timeout).ExecuteScalar();
 		}
 
 		/// <summary>
@@ -200,22 +164,7 @@ namespace Bau.Libraries.LibDbProviders.Base
 		public async Task<object> ExecuteScalarAsync(string sql, ParametersDbCollection parameters, CommandType commandType, 
 													 TimeSpan? timeout = null, CancellationToken? cancellationToken = null)
 		{
-			object result;
-
-				// Ejecuta el comando
-				using (IDbCommand command = GetCommand(sql, timeout))
-				{ 
-					// Indica el tipo de comando
-					command.CommandType = commandType;
-					command.CommandTimeout = GetTimeout(timeout);
-					// Añade los parámetros al comando
-					AddParameters(command, parameters);
-					// Ejecuta la consulta
-					result = await (command as DbCommand).ExecuteScalarAsync(cancellationToken ?? CancellationToken.None);
-				}
-				// Devuelve el resultado
-				return result;
-
+			return await (PrepareCommand(sql, parameters, commandType, timeout) as DbCommand).ExecuteScalarAsync(cancellationToken ?? CancellationToken.None);
 		}
 
 		/// <summary>

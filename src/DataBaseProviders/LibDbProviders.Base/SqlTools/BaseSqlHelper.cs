@@ -233,6 +233,25 @@ namespace Bau.Libraries.LibDbProviders.Base.SqlTools
 		}
 
 		/// <summary>
+		///		Formatea un nombre de campo / tabla, es decir, SeparatorStart + field + SeparatorEnd
+		/// </summary>
+		public string FormatName(string field)
+		{
+			return $"{SeparatorStart}{field}{SeparatorEnd}";
+		}
+
+		/// <summary>
+		///		Formatea un nombre de campo y tabla, es decir, SeparatorStart + table + SeparatorEnd + . + SeparatorStart + field + SeparatorEnd
+		/// </summary>
+		public string FormatName(string table, string field)
+		{
+			if (string.IsNullOrWhiteSpace(table))
+				return FormatName(field);
+			else
+				return $"{SeparatorStart}{table}{SeparatorEnd}.{SeparatorStart}{field}{SeparatorEnd}";
+		}
+
+		/// <summary>
 		///		Separador inicial para el nombre de campos tablas
 		/// </summary>
 		public abstract string SeparatorStart { get; }

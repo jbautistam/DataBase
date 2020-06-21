@@ -34,6 +34,16 @@ namespace Bau.Libraries.LibDbProviders.Base.SqlTools
 		(string sql, ParametersDbCollection parametersDb) NormalizeSql(string sql, ParametersDbCollection parametersDb);
 
 		/// <summary>
+		///		Formatea un nombre de campo / tabla, es decir, SeparatorStart + field + SeparatorEnd
+		/// </summary>
+		string FormatName(string field);
+
+		/// <summary>
+		///		Formatea un nombre de campo y tabla, es decir, SeparatorStart + table + SeparatorEnd + . + SeparatorStart + field + SeparatorEnd
+		/// </summary>
+		string FormatName(string table, string field);
+
+		/// <summary>
 		///		Prefijos de los parámetros
 		/// </summary>
 		string ParameterPrefix { get; }
